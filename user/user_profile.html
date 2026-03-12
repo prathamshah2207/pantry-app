@@ -22,7 +22,7 @@
 	<script>
 		async function loadUser() {
 			try {
-				const response = await fetch("/user");
+				const response = await fetch("http://localhost:3000/user");
 				const data = await response.json();
 
 				if (data.exists) {
