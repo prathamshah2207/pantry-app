@@ -1,19 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>User Profile</title>
+	<title>User Profile</title>
 </head>
 <body>
-  <h1><center><b>User Profile</b></center></h1>
+	<h1><center><b>User Profile</b></center></h1>
 
-  <form>
-	<p><label>Display Name:</label> Joe</p>
-	<p><label>Username:</label> joeNotFound</p>
-	<p><label>Email:</label> joehere@gmail.com</p>
-	
-	<p><button type="edit">Edit</button>
-		<button type="inventory">Inventory</button>
-		<button type="recipes">Your recipes</button></p>
-  </form>
+	<form>
+		<p><label>Display Name:</label> <span id="displayName"></span></p>
+		<p><label>Username:</label> <span id="username"></span></p>
+		<p><label>Email:</label> <span id="email"></span></p>
+		<p><label>Diet Preference:</label> <span id="dietPreference"></span></p>
+
+		<p>
+			<button type="button">Edit</button>
+			<button type="button">Inventory</button>
+			<button type="button">Your recipes</button>
+		</p>
+	</form>
+
+	<script>
+		async function loadUser() {
+			try {
+				const response = await fetch("/user");
+				const data = await response.json();
+
+				if (data.exists) {
+					const user = data.user;
+
+					document.getElementById("displayName").textContent = user.name;
+					document.getElementById("username").textContent = user.username;
+					document.getElementById("email").textContent = user.email || "";
+					document.getElementById("dietPreference").textContent = user.dietPreference || "";
+				}
+			}
+			catch (err) {
+				console.error("Error fetching user:", err);
+			}
+		}
+
+		loadUser();
+	</script>
 </body>
 </html>
