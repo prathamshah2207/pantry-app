@@ -49,5 +49,47 @@
 	</form>
 
 	<p id="message"></p>
+
+	<script>
+		const signupForm = document.getElementById("signupForm");
+		const message = document.getElementById("message");
+
+		signupForm.addEventListener("submit", async function(event) {
+			event.preventDefault();
+
+			const userData = {
+				name: document.getElementById("name").value,
+				username: document.getElementById("username").value,
+				email: document.getElementById("email").value,
+				password: document.getElementById("password").value,
+				dietPreference: document.getElementById("dietPreference").value,
+				allowSubstitutions: document.getElementById("allowSubstitutions").checked
+			};
+
+			try {
+				const response = await fetch("http://localhost:3000/user", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify(userData)
+				});
+
+				const data = await response.json();
+
+				if (response.ok) {
+					message.textContent = data.message;
+					window.location.href = "user_profile.html";
+				}
+				else {
+					message.textContent = data.message;
+				}
+			}
+			catch (err) {
+				message.textContent = "Error creating profile.";
+				console.error(err);
+			}
+		});
+	</script>
 </body>
 </html>
