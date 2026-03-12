@@ -9,11 +9,50 @@ app.use(express.json());
 
 const userFilePath = path.join(__dirname, "user", "user.json");
 
-app.post("/signup", (req, res) => {
+
+app.get("/user", (req, res) => {
+	try {
+		if (!fs.existsSync(userFilePath)) {
+			return res.json({ exists: false, user: null });
+		}
+
+		const fileData = fs.readFileSync(userFilePath, "utf8");
+
+		if (!fileData || fileData === "null") {
+			return res.json({ exists: false, user: null });
+		}
+
+		const user = JSON.parse(fileData);
+
+		res.json({
+			exists: true,
+			user
+		});
+	}
+	catch (error) {
+		res.status(500).json({ message: "Error reading user data" });
+	}
+});
+
+app.post("/user", (req, res) => {
 	const { name, username, email, password, dietPreference, allowSubstitutions } = req.body;
 
-	if (!name || !username || !password)
-		return res.status(400).json({message: "Name, username, and password are required"});
+	if (!name || !username || !password) {
+		return res.status(400).json({
+			message: "Name, username, and password are required"
+		});
+	}
+	
+	if (!fs.existsSync(userFilePath)) {
+		fs.writeFileSync(userFilePath, "null");
+	}
+
+	// const existingData = fs.readFileSync(userFilePath, "utf8");
+	// if (existingData && existingData !== "null") {
+	// 	return res.status(409).json({
+	// 		message: "User profile already exists on this device"
+	// 	});
+	// }
 
 	const newUser = {
 		name,
@@ -28,18 +67,14 @@ app.post("/signup", (req, res) => {
 
 	res.status(201).json({
 		message: "User profile created successfully",
-		user: {
-			id: newUser.id,
-			name: newUser.name,
-			username: newUser.username
-		}
+		user: newUser
 	});
 });
 
 app.get("/", (req, res) => {
-  res.send("Server is running");
+	res.send("Server is running");
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+	console.log(`Server running on http://localhost:${PORT}`);
 });
