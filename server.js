@@ -73,6 +73,46 @@ app.post("/user", (req, res) => {
 	});
 });
 
+app.put("/user", (req, res) => {
+	try {
+		if (!fs.existsSync(userFilePath)) {
+			return res.status(404).json({
+				message: "No user profile found"
+			});
+		}
+
+		const fileData = fs.readFileSync(userFilePath, "utf8");
+
+		if (!fileData || fileData === "null") {
+			return res.status(404).json({
+				message: "No user profile found"
+			});
+		}
+
+		const existingUser = JSON.parse(fileData);
+		const { name, email, dietPreference } = req.body;
+
+		const updatedUser = {
+			...existingUser,
+			name: name ?? existingUser.name,
+			email: email ?? existingUser.email,
+			dietPreference: dietPreference ?? existingUser.dietPreference
+		};
+
+		fs.writeFileSync(userFilePath, JSON.stringify(updatedUser, null, 2));
+
+		res.json({
+			message: "User profile updated successfully",
+			user: updatedUser
+		});
+	}
+	catch (error) {
+		res.status(500).json({
+			message: "Error updating user profile"
+		});
+	}
+});
+
 app.get("/", (req, res) => {
 	res.send("Server is running");
 });
