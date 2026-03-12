@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Recipe Tracker</title>
+</head>
+
+<body>
+
+<h2>Create Recipe</h2>
+
+<input id="recipeName" placeholder="Recipe name">
+<button onclick="createRecipe()">Create Recipe</button>
+
+<h2>Add Ingredient</h2>
+
+<select id="ingredient">
+<option value="1.65">Chicken</option>
+<option value="1.30">Rice</option>
+<option value="8.8">Olive Oil</option>
+<option value="1.55">Egg</option>
+</select>
+
+<input id="qty" placeholder="Quantity">
+
+<button onclick="addIngredient()">Add Ingredient</button>
+
+<h2>Calories</h2>
+
+<button onclick="calcCalories()">Calculate Calories</button>
+
+<p id="result">Total Calories: 0</p>
+
+<script>
+
+let ingredients = [];
+
+function createRecipe() {
+
+    let name = document.getElementById("recipeName").value;
+
+    alert("Recipe created: " + name);
+}
+
+function addIngredient() {
+
+    let calories = parseFloat(document.getElementById("ingredient").value);
+    let quantity = parseFloat(document.getElementById("qty").value);
+
+    ingredients.push({
+        calories: calories,
+        quantity: quantity
+    });
+
+    alert("Ingredient added");
+}
+
+function calcCalories() {
+
+    let total = 0;
+
+    ingredients.forEach(i => {
+        total += i.calories * i.quantity;
+    });
+
+    document.getElementById("result").innerText =
+        "Total Calories: " + total;
+}
+
+</script>
+
+</body>
+</html>
