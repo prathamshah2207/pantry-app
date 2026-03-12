@@ -25,14 +25,17 @@
 				const response = await fetch("http://localhost:3000/user");
 				const data = await response.json();
 
-				if (data.exists) {
-					const user = data.user;
-
-					document.getElementById("displayName").textContent = user.name;
-					document.getElementById("username").textContent = user.username;
-					document.getElementById("email").textContent = user.email || "";
-					document.getElementById("dietPreference").textContent = user.dietPreference || "";
+				if (!data.exists) {
+					window.location.href = "signup.html";
+					return;
 				}
+
+				const user = data.user;
+
+				document.getElementById("displayName").textContent = user.name;
+				document.getElementById("username").textContent = user.username;
+				document.getElementById("email").textContent = user.email || "";
+				document.getElementById("dietPreference").textContent = user.dietPreference || "";
 			}
 			catch (err) {
 				console.error("Error fetching user:", err);
