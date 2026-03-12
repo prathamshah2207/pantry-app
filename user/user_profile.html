@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Profile</title>
+  <link rel="stylesheet" href="styles/Profile.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <div class="profile-container">
+	<div class="profile-card">
+	  <div class="profile-header">
+		<h2>Profile</h2>
+		<p class="profile-subtitle">
+		  Manage the basics of your Somehow I Managed account.
+		</p>
+	  </div>
+
+	  <!--
+		Replace the hardcoded values below with server-side templating
+		or your own JS to inject real user data.
+	  -->
+	  <form class="profile-form" id="profile-form">
+		<!-- Display name (read-only) -->
+		<div class="profile-field">
+		  <label>Display name</label>
+		  <p class="profile-field-value" id="display-name">
+			Michael Scott
+		  </p>
+		</div>
+
+		<!-- Username (read-only) -->
+		<div class="profile-field">
+		  <label>Username</label>
+		  <p class="profile-field-value" id="username">
+			worldsboss
+		  </p>
+		</div>
+
+		<!-- Email (read-only) -->
+		<div class="profile-field">
+		  <label>Email</label>
+		  <p class="profile-field-value" id="email">
+			michael@dundermifflin.com
+		  </p>
+		</div>
+
+
+		  <p class="profile-help-text">
+			You can change this anytime. It&#39;s only used inside your account.
+		  </p>
+		</div>
+
+		<!-- Status message (optional; you can toggle this via JS) -->
+		<p class="profile-status" id="profile-status" style="display: none;">
+		  Changes saved.
+		</p>
+
+		<div class="profile-actions">
+		  <a href="/" class="profile-secondary-button">
+			Back to home
+		  </a>
+		  <button
+			type="submit"
+			class="profile-primary-button"
+			id="save-button"
+		  >
+			Save changes
+		  </button>
+		</div>
+	  </form>
+	</div>
+  </div>
+
+  <!-- Optional: minimal JS example to show status message on submit -->
+  <script>
+	const form = document.getElementById("profile-form");
+	const statusEl = document.getElementById("profile-status");
+	const saveBtn = document.getElementById("save-button");
+
+	form.addEventListener("submit", function (e) {
+	  e.preventDefault();
+
+	  // Basic age validation similar to your React version
+	  const ageInput = document.getElementById("age-input");
+	  const value = ageInput.value.trim();
+	  if (value !== "") {
+		const parsed = Number(value);
+		if (Number.isNaN(parsed) || parsed < 0) {
+		  statusEl.textContent = "Please enter a valid non-negative age.";
+		  statusEl.style.display = "block";
+		  return;
+		}
+	  }
+
+	  // Here you’d call your backend via fetch/axios if you want.
+	  // This demo just shows a success message.
+	  statusEl.textContent = "Changes saved.";
+	  statusEl.style.display = "block";
+	});
+  </script>
+</body>
+</html>
