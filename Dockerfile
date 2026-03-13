@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy app files
 COPY *.json ./
 COPY server.js .
-COPY public ./public   
+COPY inventory ./inventory 
 RUN npm install
 #Expose port
 EXPOSE 80

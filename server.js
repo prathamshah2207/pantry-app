@@ -15,7 +15,7 @@ const fsPromises = fs.promises;
 /* --------------------
    NEW: server HTML
 --------------------- */
-app.use(express.static('public')); 
+app.use(express.static('inventory')); 
 app.use(express.json());
 //tells Express to serve static files (HTML, CSS, images, client-side JS)
 // from a folder called public.
@@ -28,15 +28,19 @@ app.use(express.json());
 
 const DATA_FILE = path.join(__dirname, 'data', 'posts.json');
 
-app.get('/api/posts', (req,res) => {
-    res.sendFile("public/posts.html", {root: __dirname});
+app.get('/', (req,res) => {
+    res.sendFile("inventory/invpage.html", {root: __dirname});
 });
-app.get('/api/styles', (req,res) => {
-    res.sendFile("public/styles.css", {root: __dirname});
-});
-app.get('/api/newpost', (req,res) => {
-    res.sendFile("public/newpost.html", {root: __dirname});
-});
+
+
+
+
+// app.get('/api/styles', (req,res) => {
+//     res.sendFile("public/styles.css", {root: __dirname});
+// });
+// app.get('/api/newpost', (req,res) => {
+//     res.sendFile("public/newpost.html", {root: __dirname});
+// });
 
 app.get('/api/getmsg', async (req, res) => {
     try {
@@ -51,20 +55,20 @@ app.get('/api/getmsg', async (req, res) => {
     }
 })
 
-app.post('/api/sendmsg', async (req, res) => {
-    const {topic, message, date} = req.body;
+// app.post('/api/sendmsg', async (req, res) => {
+//     const {topic, message, date} = req.body;
 
-    try {
-        // await pauses THIS function, not the server
+//     try {
+//         // await pauses THIS function, not the server
 
-        const entry = {topic, message, date};
-        await fsPromises.appendFile(DATA_FILE, JSON.stringify(entry) + '\n');
+//         const entry = {topic, message, date};
+//         await fsPromises.appendFile(DATA_FILE, JSON.stringify(entry) + '\n');
 
-        res.send('Async/Await: saved!');
-    } catch (err) {
-        res.status(500).send('Async/Await: write failed');
-    }
-});
+//         res.send('Async/Await: saved!');
+//     } catch (err) {
+//         res.status(500).send('Async/Await: write failed');
+//     }
+// });
 
 app.get('/gp', (req,res) => {
     res.json(DATA_FILE);
