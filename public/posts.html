@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CMPT 353 a3</title>
+  <link rel="stylesheet" href="/api/styles">
+</head>
+<body>
+    
+    <a href="/">back</a>
+    <br>
+
+    <ul id = "list"></ul>
+
+    <script>
+        setInterval(getmsgs, 5000);
+
+        function getmsgs() {
+            get('/api/getmsg');
+        }
+
+        function get(url) {
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('list');
+                    list.innerHTML = '';
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${item.topic} <br> ${item.message} <br> ${item.date} <br>`;
+                        list.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error fetching file:', error));
+        }
+    </script>
+
+</body>
+</html>

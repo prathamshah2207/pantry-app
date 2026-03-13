@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CMPT353 a3</title>
+  <link rel="stylesheet" href="/api/styles">
+</head>
+<body>
+
+  <h1>Send a Message</h1>
+
+  <!-- Simple input -->
+  <input id="topic" placeholder="topic" />
+  <input id="msg" placeholder="Type a message" />
+
+  <br>
+
+  <!-- Buttons hit different routes -->
+  <button onclick="sendAsync()">Send</button>
+
+  <p id="result"></p>
+
+  <br>
+  <a href="/">back</a>
+
+  <script>
+
+    function sendAsync() {
+      send('/api/sendmsg');
+    }
+
+    function send(url) {
+      const topic = document.getElementById('topic').value;
+      const message = document.getElementById('msg').value;
+      const date = Date().toString();
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, message, date })
+      })
+      .then(res => res.text())
+      .then(text => {
+        document.getElementById('result').innerText = text;
+      })
+      .catch(err => {//catch is the place where we handle failure.
+        document.getElementById('result').innerText = 'Client error';
+      });
+    }
+  </script>
+
+</body>
+</html>

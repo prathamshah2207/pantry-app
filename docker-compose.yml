@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    container_name: node_1
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/app
