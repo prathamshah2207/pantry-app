@@ -27,6 +27,7 @@
         <table id="table">
             <tr>
                 <th>Amount</th>
+                <th>/Total</th>
                 <th>Ingredient</th>
                 <th>Calories</th>
                 <th>Edit</th>
@@ -60,10 +61,16 @@
             .then(res => res.json())
             .then(data => {
                 const list = document.getElementById('table');
-                list.innerHTML = '<tr><th>Amount</th><th>Ingredient</th><th>Calories</th><th>Edit</th><th>Reset</th><th>Delete</th></tr>';
+                list.innerHTML = '<tr><th>Amount</th><th>/Total</th><th>Ingredient</th><th>Calories</th><th>Edit</th><th>Reset</th><th>Delete</th></tr>';
                 data.forEach(item => {
                     const li = document.createElement('tr');
-                    li.innerHTML = `<td>${item.quant}</td> <td>${item.name}</td> <td>${item.cals}</td>`;
+                    li.innerHTML = `
+                    <td>${item.quant}</td>
+                    <td>${item.defa}</td>
+                    <td>${item.name}</td>
+                    <td>${item.cals}</td>
+                    <td><button onclick="editItem('${item.quant}', '${item.name}', '${item.cals}', '${item.defa}')">Edit</button></td>
+                    `;
                     list.appendChild(li);
                 });
             })
@@ -80,11 +87,12 @@
         const name = document.getElementById('name').value;
         const cals = document.getElementById('cals').value;
         const defa = document.getElementById('defa').value;
+        const id = Date.now();
 
         fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quant, name, cals, defa })
+            body: JSON.stringify({ quant, name, cals, defa, id })
         })
         .then(res => res.text())
         .then(text => {
@@ -92,6 +100,36 @@
         })
         .catch(err => {//catch is the place where we handle failure.
             document.getElementById('result').innerText = 'Client error';
+        });
+    }
+
+    function editItem(id, quant, name, cals, defa) {
+        const popupd = document.getElementById('popup');
+
+        popupd.innerHTML = `
+            <input id="editQuant" value="${quant}">
+            <input id="editName" value="${name}">
+            <input id="editCals" value="${cals}">
+            <input id="editDefa" value="${defa}">
+            <button onclick="saveEdit(${id})">Save</button>
+        `;
+    }
+
+    function saveEdit(id) {
+        const quant = document.getElementById('editQuant').value;
+        const name = document.getElementById('editName').value;
+        const cals = document.getElementById('editCals').value;
+        const defa = document.getElementById('editDefa').value;
+
+        fetch('/api/editmsg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quant, name, cals, defa, id })
+        })
+        .then(res => res.text())
+        .then(() => {
+            document.getElementById("popup").innerHTML = '';
+            getmsgs(); // refresh table
         });
     }
 </script>

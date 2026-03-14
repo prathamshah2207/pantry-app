@@ -56,17 +56,48 @@ app.get('/api/getmsg', async (req, res) => {
 })
 
 app.post('/api/sendmsg', async (req, res) => {
-    const {quant, name, cals, defa} = req.body;
+    const {quant, name, cals, defa, id} = req.body;
 
     try {
         // await pauses THIS function, not the server
 
-        const entry = {quant, name, cals, defa};
+        const entry = {quant, name, cals, defa, id};
         await fsPromises.appendFile(DATA_FILE, JSON.stringify(entry) + '\n');
 
         res.send('Async/Await: saved!');
     } catch (err) {
         res.status(500).send('Async/Await: write failed');
+    }
+});
+
+app.post('/api/editmsg', async (req, res) => {
+
+    const {quant, name, cals, defa, id} = req.body;
+
+    try {
+
+        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+
+        const lines = data.split('\n').filter(line => line.trim() !== '');
+
+        const messages = lines.map(line => JSON.parse(line));
+
+        const updated = messages.map(item => {
+            if (item.id == id) {
+                return { quant, name, cals, defa, id };
+            }
+            return item;
+        });
+
+        const newFile = updated.map(item => JSON.stringify(item)).join('\n') + '\n';
+
+        await fsPromises.writeFile(DATA_FILE, newFile);
+
+        res.send('Edited successfully');
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Edit failed');
     }
 });
 
