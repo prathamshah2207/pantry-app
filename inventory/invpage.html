@@ -8,7 +8,7 @@
 <style>
     table {
         overflow-y: scroll;
-        height: 500px;
+        height: 400px;
         display: block;
         margin: 0px auto;
     }
@@ -45,93 +45,175 @@
     </div>
 
 <script>
-    setInterval(getmsgs, 5000);
 
-    function makepopup() {
-        const popupd = document.getElementById('popup');
-        popupd.innerHTML = '<input id="quant" placeholder="item quantity"><input id="name" placeholder="item name"><input id="cals" placeholder="item calories"><input id="defa" placeholder="default restock number"><button onclick="sendAsync()">Submit</button>';
-    }
+let items = [];
 
-    function getmsgs() {
-        get('/api/getmsg');
-    }
+/* -----------------------
+   Load inventory
+----------------------- */
+async function loadItems() {
 
-    function get(url) {
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                const list = document.getElementById('table');
-                list.innerHTML = '<tr><th>Amount</th><th>/Total</th><th>Ingredient</th><th>Calories</th><th>Edit</th><th>Reset</th><th>Delete</th></tr>';
-                data.forEach(item => {
-                    const li = document.createElement('tr');
-                    li.innerHTML = `
-                    <td>${item.quant}</td>
-                    <td>${item.defa}</td>
-                    <td>${item.name}</td>
-                    <td>${item.cals}</td>
-                    <td><button onclick="editItem('${item.quant}', '${item.name}', '${item.cals}', '${item.defa}')">Edit</button></td>
-                    `;
-                    list.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error fetching file:', error));
-    }
+    const res = await fetch('/api/getmsg');
+    items = await res.json();
 
-    function sendAsync() {
-        send('/api/sendmsg');
-        document.getElementById("popup").innerHTML = '';
-    }
+    renderTable();
+}
 
-    function send(url) {
-        const quant = document.getElementById('quant').value;
-        const name = document.getElementById('name').value;
-        const cals = document.getElementById('cals').value;
-        const defa = document.getElementById('defa').value;
-        const id = Date.now();
+/* -----------------------
+   Render table
+----------------------- */
+function renderTable() {
 
-        fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quant, name, cals, defa, id })
-        })
-        .then(res => res.text())
-        .then(text => {
-            document.getElementById('result').innerText = text;
-        })
-        .catch(err => {//catch is the place where we handle failure.
-            document.getElementById('result').innerText = 'Client error';
-        });
-    }
+    const table = document.getElementById('table');
 
-    function editItem(id, quant, name, cals, defa) {
-        const popupd = document.getElementById('popup');
+    table.innerHTML = `
+        <tr>
+            <th>Amount</th>
+            <th>Ingredient</th>
+            <th>Calories</th>
+            <th>Edit</th>
+            <th>Reset</th>
+            <th>Delete</th>
+        </tr>
+    `;
 
-        popupd.innerHTML = `
-            <input id="editQuant" value="${quant}">
-            <input id="editName" value="${name}">
-            <input id="editCals" value="${cals}">
-            <input id="editDefa" value="${defa}">
-            <button onclick="saveEdit(${id})">Save</button>
+    items.forEach(item => {
+
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${item.quant}</td>
+            <td>${item.name}</td>
+            <td>${item.cals}</td>
+            <td><button onclick="openEdit(${item.id})">Edit</button></td>
+            <td><button onclick="resetItem(${item.id})">Reset</button></td>
+            <td><button onclick="deleteItem(${item.id})">Delete</button></td>
         `;
-    }
 
-    function saveEdit(id) {
-        const quant = document.getElementById('editQuant').value;
-        const name = document.getElementById('editName').value;
-        const cals = document.getElementById('editCals').value;
-        const defa = document.getElementById('editDefa').value;
+        table.appendChild(row);
 
-        fetch('/api/editmsg', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quant, name, cals, defa, id })
-        })
-        .then(res => res.text())
-        .then(() => {
-            document.getElementById("popup").innerHTML = '';
-            getmsgs(); // refresh table
-        });
-    }
+    });
+
+}
+
+/* -----------------------
+   Add item popup
+----------------------- */
+function makepopup() {
+
+    const popup = document.getElementById('popup');
+
+    popup.innerHTML = `
+        <h3>Add Item</h3>
+        <input id="quant" placeholder="quantity">
+        <input id="name" placeholder="name">
+        <input id="cals" placeholder="calories">
+        <input id="defa" placeholder="default restock">
+        <button onclick="addItem()">Save</button>
+        <button onclick="closePopup()">Cancel</button>
+    `;
+}
+
+/* -----------------------
+   Edit popup
+----------------------- */
+function openEdit(id) {
+
+    const item = items.find(i => i.id === id);
+
+    const popup = document.getElementById('popup');
+
+    popup.innerHTML = `
+        <h3>Edit Item</h3>
+        <input id="quant" value="${item.quant}">
+        <input id="name" value="${item.name}">
+        <input id="cals" value="${item.cals}">
+        <input id="defa" value="${item.defa}">
+        <button onclick="saveEdit(${id})">Save</button>
+        <button onclick="closePopup()">Cancel</button>
+    `;
+}
+
+/* -----------------------
+   Close popup
+----------------------- */
+function closePopup() {
+    document.getElementById('popup').innerHTML = '';
+}
+
+/* -----------------------
+   Add item
+----------------------- */
+async function addItem() {
+
+    const quant = document.getElementById('quant').value;
+    const name = document.getElementById('name').value;
+    const cals = document.getElementById('cals').value;
+    const defa = document.getElementById('defa').value;
+
+    await fetch('/api/sendmsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quant, name, cals, defa })
+    });
+
+    closePopup();
+    loadItems();
+}
+
+/* -----------------------
+   Save edit
+----------------------- */
+async function saveEdit(id) {
+
+    const quant = document.getElementById('quant').value;
+    const name = document.getElementById('name').value;
+    const cals = document.getElementById('cals').value;
+    const defa = document.getElementById('defa').value;
+
+    await fetch('/api/editmsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, quant, name, cals, defa })
+    });
+
+    closePopup();
+    loadItems();
+}
+
+/* -----------------------
+   Delete item
+----------------------- */
+async function deleteItem(id) {
+
+    await fetch('/api/deletemsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    });
+
+    loadItems();
+}
+
+/* -----------------------
+   Reset quantity
+----------------------- */
+async function resetItem(id) {
+
+    await fetch('/api/resetmsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    });
+
+    loadItems();
+}
+
+/* -----------------------
+   Start page
+----------------------- */
+loadItems();
+
 </script>
 
 

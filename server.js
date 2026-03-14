@@ -44,60 +44,72 @@ app.get('/', (req,res) => {
 
 app.get('/api/getmsg', async (req, res) => {
     try {
-        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
-        const lines = data.split('\n').filter(line => line.trim() !== '');
-        const messages = lines.map(line => JSON.parse(line));
 
-        res.json(messages);
+        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const items = JSON.parse(data);
+
+        res.json(items);
+
     } catch (err) {
+
         console.error(err);
         res.status(500).json({ error: 'Failed to read messages' });
+
     }
 })
 
 app.post('/api/sendmsg', async (req, res) => {
-    const {quant, name, cals, defa, id} = req.body;
+    const { quant, name, cals, defa } = req.body;
 
     try {
-        // await pauses THIS function, not the server
 
-        const entry = {quant, name, cals, defa, id};
-        await fsPromises.appendFile(DATA_FILE, JSON.stringify(entry) + '\n');
+        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const items = JSON.parse(data);
 
-        res.send('Async/Await: saved!');
+        const entry = {
+            id: Date.now(),
+            quant,
+            name,
+            cals,
+            defa
+        };
+
+        items.push(entry);
+
+        await fsPromises.writeFile(DATA_FILE, JSON.stringify(items, null, 2));
+
+        res.send('Saved');
+
     } catch (err) {
-        res.status(500).send('Async/Await: write failed');
+
+        res.status(500).send('Write failed');
+
     }
 });
 
 app.post('/api/editmsg', async (req, res) => {
 
-    const {quant, name, cals, defa, id} = req.body;
+    const { id, quant, name, cals, defa } = req.body;
 
     try {
 
         const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const items = JSON.parse(data);
 
-        const lines = data.split('\n').filter(line => line.trim() !== '');
+        const updated = items.map(item =>
+            item.id == id
+                ? { id, quant, name, cals, defa }
+                : item
+        );
 
-        const messages = lines.map(line => JSON.parse(line));
+        await fsPromises.writeFile(DATA_FILE, JSON.stringify(updated, null, 2));
 
-        const updated = messages.map(item => {
-            if (item.id == id) {
-                return { quant, name, cals, defa, id };
-            }
-            return item;
-        });
-
-        const newFile = updated.map(item => JSON.stringify(item)).join('\n') + '\n';
-
-        await fsPromises.writeFile(DATA_FILE, newFile);
-
-        res.send('Edited successfully');
+        res.send('Edited');
 
     } catch (err) {
-        console.error(err);
+
         res.status(500).send('Edit failed');
+
     }
 });
 
