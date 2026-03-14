@@ -55,20 +55,20 @@ app.get('/api/getmsg', async (req, res) => {
     }
 })
 
-// app.post('/api/sendmsg', async (req, res) => {
-//     const {topic, message, date} = req.body;
+app.post('/api/sendmsg', async (req, res) => {
+    const {quant, name, cals, defa} = req.body;
 
-//     try {
-//         // await pauses THIS function, not the server
+    try {
+        // await pauses THIS function, not the server
 
-//         const entry = {topic, message, date};
-//         await fsPromises.appendFile(DATA_FILE, JSON.stringify(entry) + '\n');
+        const entry = {quant, name, cals, defa};
+        await fsPromises.appendFile(DATA_FILE, JSON.stringify(entry) + '\n');
 
-//         res.send('Async/Await: saved!');
-//     } catch (err) {
-//         res.status(500).send('Async/Await: write failed');
-//     }
-// });
+        res.send('Async/Await: saved!');
+    } catch (err) {
+        res.status(500).send('Async/Await: write failed');
+    }
+});
 
 app.get('/gp', (req,res) => {
     res.json(DATA_FILE);

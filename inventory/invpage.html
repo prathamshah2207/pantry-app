@@ -21,7 +21,7 @@
     <h1 style="text-align: center;">Inventory</h1>
 
     <br>
-    <button>Add item</button>
+    <button onclick="makepopup()">Add item</button>
     <br>
     <div>
         <table id="table">
@@ -35,9 +35,21 @@
             </tr>
         </table>
     </div>
+    <div id="popup">
+        <!-- <input id="quant" placeholder="item quantity">
+        <input id="name" placeholder="item name">
+        <input id="cals" placeholder="item calories">
+        <input id="defa" placeholder="default restock number">
+        <button onclick="sendAsync()">Submit</button> -->
+    </div>
 
 <script>
     setInterval(getmsgs, 5000);
+
+    function makepopup() {
+        const popupd = document.getElementById('popup');
+        popupd.innerHTML = '<input id="quant" placeholder="item quantity"><input id="name" placeholder="item name"><input id="cals" placeholder="item calories"><input id="defa" placeholder="default restock number"><button onclick="sendAsync()">Submit</button>';
+    }
 
     function getmsgs() {
         get('/api/getmsg');
@@ -51,11 +63,36 @@
                 list.innerHTML = '<tr><th>Amount</th><th>Ingredient</th><th>Calories</th><th>Edit</th><th>Reset</th><th>Delete</th></tr>';
                 data.forEach(item => {
                     const li = document.createElement('tr');
-                    li.innerHTML = `<td>${item.topic}</td> <td>${item.message}</td> <td>${item.date}</td>`;
+                    li.innerHTML = `<td>${item.quant}</td> <td>${item.name}</td> <td>${item.cals}</td>`;
                     list.appendChild(li);
                 });
             })
             .catch(error => console.error('Error fetching file:', error));
+    }
+
+    function sendAsync() {
+        send('/api/sendmsg');
+        document.getElementById("popup").innerHTML = '';
+    }
+
+    function send(url) {
+        const quant = document.getElementById('quant').value;
+        const name = document.getElementById('name').value;
+        const cals = document.getElementById('cals').value;
+        const defa = document.getElementById('defa').value;
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quant, name, cals, defa })
+        })
+        .then(res => res.text())
+        .then(text => {
+            document.getElementById('result').innerText = text;
+        })
+        .catch(err => {//catch is the place where we handle failure.
+            document.getElementById('result').innerText = 'Client error';
+        });
     }
 </script>
 
