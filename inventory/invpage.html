@@ -82,7 +82,7 @@ function renderTable() {
         const row = document.createElement('tr');
 
         row.innerHTML = `
-            <td>${item.quant}</td>
+            <td>${item.quant}/${item.defa}</td>
             <td>${item.name}</td>
             <td>${item.cals}</td>
             <td><button onclick="openEdit(${item.id})">Edit</button></td>
