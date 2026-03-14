@@ -147,6 +147,29 @@ app.post('/api/resetmsg', async (req, res) => {
 
 });
 
+app.post('/api/deletemsg', async (req, res) => {
+
+    const { id } = req.body;
+
+    try {
+
+        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const items = JSON.parse(data);
+
+        const filtered = items.filter(item => item.id != id);
+
+        await fsPromises.writeFile(DATA_FILE, JSON.stringify(filtered, null, 2));
+
+        res.send('Deleted');
+
+    } catch (err) {
+
+        res.status(500).send('Delete failed');
+
+    }
+
+});
+
 app.get('/gp', (req,res) => {
     res.json(DATA_FILE);
 });
