@@ -119,6 +119,34 @@ app.post('/api/editmsg', async (req, res) => {
     }
 });
 
+app.post('/api/resetmsg', async (req, res) => {
+
+    const { id } = req.body;
+
+    try {
+
+        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const items = JSON.parse(data);
+
+        const updated = items.map(item => {
+            if (item.id == id) {
+                item.quant = item.defa;
+            }
+            return item;
+        });
+
+        await fsPromises.writeFile(DATA_FILE, JSON.stringify(updated, null, 2));
+
+        res.send('Reset');
+
+    } catch (err) {
+
+        res.status(500).send('Reset failed');
+
+    }
+
+});
+
 app.get('/gp', (req,res) => {
     res.json(DATA_FILE);
 });
