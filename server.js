@@ -26,6 +26,12 @@ app.use(express.json());
    The server runs JavaScript and sends a response.
  */
 
+
+/********
+ * TODO: NOTE ON THE DATAFILE:
+ * when we make the uers, when a new account is made, have a new inv json file made initialized with []. this will cover it well.
+ */
+
 const DATA_FILE = path.join(__dirname, 'data', 'posts.json');
 
 app.get('/', (req,res) => {
