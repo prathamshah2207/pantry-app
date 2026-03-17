@@ -20,4 +20,5 @@ make sure Docker Desktop is running first, otherwise this whole thing is gonna a
 from the project folder, run this command in cmd or powershell or bash or in any terminal:
 
 docker compose up --build
+
 and then after the whole process is up and running, goto localhost:80
