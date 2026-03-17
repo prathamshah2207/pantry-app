@@ -140,6 +140,9 @@
 		}
 
 		document.getElementById("editButton").addEventListener("click", enableEditMode);
+		document.getElementById("inventoryButton").addEventListener("click", () => {
+			window.location.href = "/invpage.html";
+		});
 		document.getElementById("profileForm").addEventListener("submit", saveUserChanges);
 
 		loadUser();
