@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inventory</title>
+</head>
+<style>
+    table {
+        overflow-y: scroll;
+        height: 400px;
+        display: block;
+        margin: 0px auto;
+    }
+</style>
+
+<body>
+
+    <button>Back</button>
+
+    <h1 style="text-align: center;">Inventory</h1>
+
+    <br>
+    <button onclick="makepopup()">Add item</button>
+    <br>
+    <div>
+        <table id="table">
+            <tr>
+                <th>Amount</th>
+                <th>/Total</th>
+                <th>Ingredient</th>
+                <th>Calories</th>
+                <th>Edit</th>
+                <th>Reset</th>
+                <th>Delete</th>
+            </tr>
+        </table>
+    </div>
+    <div id="popup">
+        <!-- <input id="quant" placeholder="item quantity">
+        <input id="name" placeholder="item name">
+        <input id="cals" placeholder="item calories">
+        <input id="defa" placeholder="default restock number">
+        <button onclick="sendAsync()">Submit</button> -->
+    </div>
+
+<script>
+
+let items = [];
+
+/* -----------------------
+   Load inventory
+----------------------- */
+async function loadItems() {
+
+    const res = await fetch('/api/getmsg');
+    items = await res.json();
+
+    renderTable();
+}
+
+/* -----------------------
+   Render table
+----------------------- */
+function renderTable() {
+
+    const table = document.getElementById('table');
+
+    table.innerHTML = `
+        <tr>
+            <th>Amount</th>
+            <th>Ingredient</th>
+            <th>Calories</th>
+            <th>Edit</th>
+            <th>Reset</th>
+            <th>Delete</th>
+        </tr>
+    `;
+
+    items.forEach(item => {
+
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${item.quant}/${item.defa}</td>
+            <td>${item.name}</td>
+            <td>${item.cals}</td>
+            <td><button onclick="openEdit(${item.id})">Edit</button></td>
+            <td><button onclick="resetItem(${item.id})">Reset</button></td>
+            <td><button onclick="deleteItem(${item.id})">Delete</button></td>
+        `;
+
+        table.appendChild(row);
+
+    });
+
+}
+
+/* -----------------------
+   Add item popup
+----------------------- */
+function makepopup() {
+
+    const popup = document.getElementById('popup');
+
+    popup.innerHTML = `
+        <h3>Add Item</h3>
+        <input id="quant" placeholder="quantity">
+        <input id="name" placeholder="name">
+        <input id="cals" placeholder="calories">
+        <input id="defa" placeholder="default restock">
+        <button onclick="addItem()">Save</button>
+        <button onclick="closePopup()">Cancel</button>
+    `;
+}
+
+/* -----------------------
+   Edit popup
+----------------------- */
+function openEdit(id) {
+
+    const item = items.find(i => i.id === id);
+
+    const popup = document.getElementById('popup');
+
+    popup.innerHTML = `
+        <h3>Edit Item</h3>
+        <input id="quant" value="${item.quant}">
+        <input id="name" value="${item.name}">
+        <input id="cals" value="${item.cals}">
+        <input id="defa" value="${item.defa}">
+        <button onclick="saveEdit(${id})">Save</button>
+        <button onclick="closePopup()">Cancel</button>
+    `;
+}
+
+/* -----------------------
+   Close popup
+----------------------- */
+function closePopup() {
+    document.getElementById('popup').innerHTML = '';
+}
+
+/* -----------------------
+   Add item
+----------------------- */
+async function addItem() {
+
+    const quant = document.getElementById('quant').value;
+    const name = document.getElementById('name').value;
+    const cals = document.getElementById('cals').value;
+    const defa = document.getElementById('defa').value;
+
+    await fetch('/api/sendmsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quant, name, cals, defa })
+    });
+
+    closePopup();
+    loadItems();
+}
+
+/* -----------------------
+   Save edit
+----------------------- */
+async function saveEdit(id) {
+
+    const quant = document.getElementById('quant').value;
+    const name = document.getElementById('name').value;
+    const cals = document.getElementById('cals').value;
+    const defa = document.getElementById('defa').value;
+
+    await fetch('/api/editmsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, quant, name, cals, defa })
+    });
+
+    closePopup();
+    loadItems();
+}
+
+/* -----------------------
+   Delete item
+----------------------- */
+async function deleteItem(id) {
+
+    await fetch('/api/deletemsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    });
+
+    loadItems();
+}
+
+/* -----------------------
+   Reset quantity
+----------------------- */
+async function resetItem(id) {
+
+    await fetch('/api/resetmsg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    });
+
+    loadItems();
+}
+
+/* -----------------------
+   Start page
+----------------------- */
+loadItems();
+
+</script>
+
+
+</body>
+</html>
