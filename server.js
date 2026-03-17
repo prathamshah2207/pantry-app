@@ -45,7 +45,7 @@ app.use(cors());
  */
 
 app.get('/', (req,res) => {
-    res.sendFile("inventory/invpage.html", {root: __dirname});
+    res.sendFile("index.html", {root: __dirname});
 });
 
 

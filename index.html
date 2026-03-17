@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pantry WebApp</title>
+</head>
+<body>
+	<h1><center><b>Pantry & Recipe App</b></center></h1>
+
+	<p id="welcomeText"></p>
+
+	<p>
+		<button type="button" id="profileButton">Profile</button>
+		<button type="button" id="inventoryButton">Inventory</button>
+		<button type="button" id="recipesButton">Recipes</button>
+	</p>
+
+	<script>
+		async function loadPage() {
+			try {
+				const response = await fetch("/user");
+				const data = await response.json();
+
+				if (data.exists) {
+					document.getElementById("welcomeText").textContent =
+						`Welcome, ${data.user.name}`;
+				}
+				else {
+					document.getElementById("welcomeText").textContent =
+						"No user profile found yet. Go to Profile to create one!";
+				}
+			}
+			catch (err) {
+				console.error("Error fetching user:", err);
+				document.getElementById("welcomeText").textContent =
+					"Could not load user information.";
+			}
+		}
+
+		document.getElementById("profileButton").addEventListener("click", () => {
+			window.location.href = "/user/user_profile.html";
+		});
+
+		document.getElementById("inventoryButton").addEventListener("click", () => {
+			window.location.href = "/inventory/invpage.html";
+		});
+
+		document.getElementById("recipesButton").addEventListener("click", () => {});
+
+		loadPage();
+	</script>
+</body>
+</html>
