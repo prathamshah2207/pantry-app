@@ -22,3 +22,7 @@ from the project folder, run this command in cmd or powershell or bash or in any
 docker compose up --build
 
 and then after the whole process is up and running, goto localhost:80
+
+and when you want to shut things down, just crtl+C twice in the terminal and then run:
+
+docker compose down
