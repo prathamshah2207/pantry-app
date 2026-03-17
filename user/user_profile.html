@@ -54,7 +54,7 @@
 
 		async function loadUser() {
 			try {
-				const response = await fetch("http://localhost:3000/user");
+				const response = await fetch("/user");
 				const data = await response.json();
 
 				if (!data.exists) {
@@ -101,7 +101,7 @@
 			};
 
 			try {
-				const response = await fetch("http://localhost:3000/user", {
+				const response = await fetch("/user", {
 					method: "PUT",
 					headers: {
 						"Content-Type": "application/json"
