@@ -38,25 +38,16 @@ app.use(cors());
    The server runs JavaScript and sends a response.
  */
 
-
-/********
- * TODO: NOTE ON THE DATAFILE:
- * when we make the uers, when a new account is made, have a new inv json file made initialized with []. this will cover it well.
- */
-
 app.get('/', (req,res) => {
     res.sendFile("index.html", {root: __dirname});
 });
 
 
-
-
-// app.get('/api/styles', (req,res) => {
-//     res.sendFile("public/styles.css", {root: __dirname});
-// });
-// app.get('/api/newpost', (req,res) => {
-//     res.sendFile("public/newpost.html", {root: __dirname});
-// });
+/**
+ * *****************************************************************
+ * 						INVENTORY	API
+ * *****************************************************************
+ */
 
 app.get('/api/getmsg', async (req, res) => {
     try {
@@ -184,9 +175,14 @@ app.get('/gp', (req,res) => {
     res.json(INV_DATA_FILE);
 });
 
-//////////////########################
-//				USER API
-////////////////#######################
+/*#########			END OF INVENTORY API		############*/
+
+
+/**
+ * ***************************************************************
+ *					 		USER	API
+ * ***************************************************************
+ */
 
 app.get("/user", (req, res) => {
 	try {
@@ -291,7 +287,8 @@ app.put("/user", (req, res) => {
 	}
 });
 
-/////////#########		END OF USER API		############///////////
+/*#########			END OF USER API			############*/
+
 
 app.listen(PORT, HOST, () => {
     console.log(`Server running on ${PORT} by host ${HOST}`);
