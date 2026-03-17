@@ -11,7 +11,7 @@
 		<p>
 			<label>Display Name:</label>
 			<span id="displayName"></span>
-			<input type="text" id="editDisplayName" style="display: none;">
+			<input type="text" id="editDisplayName" hidden>
 		</p>
 
 		<p>
@@ -22,13 +22,13 @@
 		<p>
 			<label>Email:</label>
 			<span id="email"></span>
-			<input type="email" id="editEmail" style="display: none;">
+			<input type="email" id="editEmail" hidden>
 		</p>
 
 		<p>
 			<label>Diet Preference:</label>
 			<span id="dietPreference"></span>
-			<select id="editDietPreference" style="display: none;">
+			<select id="editDietPreference" hidden>
 				<option value="">None</option>
 				<option value="vegetarian">Vegetarian</option>
 				<option value="vegan">Vegan</option>
@@ -43,7 +43,7 @@
 			<button type="button" id="recipesButton">Your recipes</button>
 		</p>
 
-		<p id="editButtons" style="display: none;">
+		<p id="editButtons" hidden>
 			<button type="submit">Save</button>
 		</p>
 	</form>
@@ -76,20 +76,20 @@
 		}
 
 		function enableEditMode() {
-			document.getElementById("displayName").style.display = "none";
-			document.getElementById("email").style.display = "none";
-			document.getElementById("dietPreference").style.display = "none";
+			document.getElementById("displayName").hidden = true;
+			document.getElementById("email").hidden = true;
+			document.getElementById("dietPreference").hidden = true;
 
-			document.getElementById("editDisplayName").style.display = "inline";
-			document.getElementById("editEmail").style.display = "inline";
-			document.getElementById("editDietPreference").style.display = "inline";
+			document.getElementById("editDisplayName").hidden = false;
+			document.getElementById("editEmail").hidden = false;
+			document.getElementById("editDietPreference").hidden = false;
 
 			document.getElementById("editDisplayName").value = currentUser.name;
 			document.getElementById("editEmail").value = currentUser.email || "";
 			document.getElementById("editDietPreference").value = currentUser.dietPreference || "";
 
-			document.getElementById("normalButtons").style.display = "none";
-			document.getElementById("editButtons").style.display = "block";
+			document.getElementById("normalButtons").hidden = true;
+			document.getElementById("editButtons").hidden = false;
 		}
 
 		async function saveUserChanges(event) {
@@ -119,16 +119,16 @@
 					document.getElementById("email").textContent = currentUser.email || "";
 					document.getElementById("dietPreference").textContent = currentUser.dietPreference || "";
 
-					document.getElementById("displayName").style.display = "inline";
-					document.getElementById("email").style.display = "inline";
-					document.getElementById("dietPreference").style.display = "inline";
+					document.getElementById("displayName").hidden = false;
+					document.getElementById("email").hidden = false;
+					document.getElementById("dietPreference").hidden = false;
 
-					document.getElementById("editDisplayName").style.display = "none";
-					document.getElementById("editEmail").style.display = "none";
-					document.getElementById("editDietPreference").style.display = "none";
+					document.getElementById("editDisplayName").hidden = true;
+					document.getElementById("editEmail").hidden = true;
+					document.getElementById("editDietPreference").hidden = true;
 
-					document.getElementById("normalButtons").style.display = "block";
-					document.getElementById("editButtons").style.display = "none";
+					document.getElementById("normalButtons").hidden = false;
+					document.getElementById("editButtons").hidden = true;
 				}
 				else {
 					console.error("Error updating user:", data.message);
