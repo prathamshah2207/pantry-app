@@ -12,7 +12,14 @@ const PORT = 80;
 const app = express();
 const fsPromises = fs.promises;
 
-const userFilePath = path.join(__dirname, "user", "user.json");
+const DATA_DIR = path.join(__dirname, 'data');
+const USER_DATA_FILE = path.join(__dirname, 'data', "user.json");
+const INV_DATA_FILE = path.join(__dirname, 'data', 'inv.json');
+
+/* ########### NEED DATA FOLDER OR IT WILL CRASH */
+if (!fs.existsSync(DATA_DIR))
+	fs.mkdirSync(DATA_DIR);
+
 
 /* --------------------
    NEW: server HTML
@@ -37,8 +44,6 @@ app.use(cors());
  * when we make the uers, when a new account is made, have a new inv json file made initialized with []. this will cover it well.
  */
 
-const DATA_FILE = path.join(__dirname, 'data', 'posts.json');
-
 app.get('/', (req,res) => {
     res.sendFile("inventory/invpage.html", {root: __dirname});
 });
@@ -56,7 +61,7 @@ app.get('/', (req,res) => {
 app.get('/api/getmsg', async (req, res) => {
     try {
 
-        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
         const items = JSON.parse(data);
 
         res.json(items);
@@ -74,7 +79,7 @@ app.post('/api/sendmsg', async (req, res) => {
 
     try {
 
-        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
         const items = JSON.parse(data);
 
         const entry = {
@@ -87,7 +92,7 @@ app.post('/api/sendmsg', async (req, res) => {
 
         items.push(entry);
 
-        await fsPromises.writeFile(DATA_FILE, JSON.stringify(items, null, 2));
+        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(items, null, 2));
 
         res.send('Saved');
 
@@ -104,7 +109,7 @@ app.post('/api/editmsg', async (req, res) => {
 
     try {
 
-        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
         const items = JSON.parse(data);
 
         const updated = items.map(item =>
@@ -113,7 +118,7 @@ app.post('/api/editmsg', async (req, res) => {
                 : item
         );
 
-        await fsPromises.writeFile(DATA_FILE, JSON.stringify(updated, null, 2));
+        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
 
         res.send('Edited');
 
@@ -130,7 +135,7 @@ app.post('/api/resetmsg', async (req, res) => {
 
     try {
 
-        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
         const items = JSON.parse(data);
 
         const updated = items.map(item => {
@@ -140,7 +145,7 @@ app.post('/api/resetmsg', async (req, res) => {
             return item;
         });
 
-        await fsPromises.writeFile(DATA_FILE, JSON.stringify(updated, null, 2));
+        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
 
         res.send('Reset');
 
@@ -158,12 +163,12 @@ app.post('/api/deletemsg', async (req, res) => {
 
     try {
 
-        const data = await fsPromises.readFile(DATA_FILE, 'utf8');
+        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
         const items = JSON.parse(data);
 
         const filtered = items.filter(item => item.id != id);
 
-        await fsPromises.writeFile(DATA_FILE, JSON.stringify(filtered, null, 2));
+        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(filtered, null, 2));
 
         res.send('Deleted');
 
@@ -176,7 +181,7 @@ app.post('/api/deletemsg', async (req, res) => {
 });
 
 app.get('/gp', (req,res) => {
-    res.json(DATA_FILE);
+    res.json(INV_DATA_FILE);
 });
 
 //////////////########################
@@ -185,11 +190,11 @@ app.get('/gp', (req,res) => {
 
 app.get("/user", (req, res) => {
 	try {
-		if (!fs.existsSync(userFilePath)) {
+		if (!fs.existsSync(USER_DATA_FILE)) {
 			return res.json({ exists: false, user: null });
 		}
 
-		const fileData = fs.readFileSync(userFilePath, "utf8");
+		const fileData = fs.readFileSync(USER_DATA_FILE, "utf8");
 
 		if (!fileData || fileData === "null") {
 			return res.json({ exists: false, user: null });
@@ -216,11 +221,13 @@ app.post("/user", (req, res) => {
 		});
 	}
 	
-	if (!fs.existsSync(userFilePath)) {
-		fs.writeFileSync(userFilePath, "null");
+	if (!fs.existsSync(USER_DATA_FILE)) {
+/////////////////		NEW USER CREATION ALSO CREATES EMPTY INV FILE
+		fs.writeFileSync(USER_DATA_FILE, "null");
+		fs.writeFileSync(INV_DATA_FILE, "[]")
 	}
 
-	// const existingData = fs.readFileSync(userFilePath, "utf8");
+	// const existingData = fs.readFileSync(USER_DATA_FILE, "utf8");
 	// if (existingData && existingData !== "null") {
 	// 	return res.status(409).json({
 	// 		message: "User profile already exists on this device"
@@ -236,7 +243,7 @@ app.post("/user", (req, res) => {
 		allowSubstitutions: allowSubstitutions ?? true
 	};
 
-	fs.writeFileSync(userFilePath, JSON.stringify(newUser, null, 2));
+	fs.writeFileSync(USER_DATA_FILE, JSON.stringify(newUser, null, 2));
 
 	res.status(201).json({
 		message: "User profile created successfully",
@@ -246,13 +253,13 @@ app.post("/user", (req, res) => {
 
 app.put("/user", (req, res) => {
 	try {
-		if (!fs.existsSync(userFilePath)) {
+		if (!fs.existsSync(USER_DATA_FILE)) {
 			return res.status(404).json({
 				message: "No user profile found"
 			});
 		}
 
-		const fileData = fs.readFileSync(userFilePath, "utf8");
+		const fileData = fs.readFileSync(USER_DATA_FILE, "utf8");
 
 		if (!fileData || fileData === "null") {
 			return res.status(404).json({
@@ -270,7 +277,7 @@ app.put("/user", (req, res) => {
 			dietPreference: dietPreference ?? existingUser.dietPreference
 		};
 
-		fs.writeFileSync(userFilePath, JSON.stringify(updatedUser, null, 2));
+		fs.writeFileSync(USER_DATA_FILE, JSON.stringify(updatedUser, null, 2));
 
 		res.json({
 			message: "User profile updated successfully",
