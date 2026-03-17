@@ -19,10 +19,10 @@ make sure Docker Desktop is running first, otherwise this whole thing is gonna a
 
 from the project folder, run this command in cmd or powershell or bash or in any terminal:
 
-docker compose up --build
+docker compose up --build -d
 
 and then after the whole process is up and running, goto localhost:80
 
-and when you want to shut things down, just crtl+C twice in the terminal and then run:
+and when you want to shut things down, just run this command in the same terminal:
 
 docker compose down
