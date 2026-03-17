@@ -1,6 +1,6 @@
 # CMPT 370 Project
 
-This is our CMPT 370 group project. The app is basically a pantry / recipe / nutrition manager type thing where users can keep track of what food items they have, manage their profile and diet preferences, and work with recipe and inventory features in one place. The whole point was to build a simple working prototype so we kept things pretty straightforward and focused on getting the core stuff working.
+The app is basically a pantry / recipe / nutrition manager type thing where users can keep track of what food items they have, manage their profile and diet preferences, and work with recipe and inventory features in one place. The whole point was to build a simple working prototype so we kept things pretty straightforward and focused on getting the core stuff working.
 
 Right now the project has a basic user profile system and inventory functionality working. A user can create a profile, view it, and edit parts of it like display name, email, and diet preference. The app also has the inventory page and backend routes connected through the shared server setup. We also set the project up with Docker so it’s easier to run without everyone’s laptop doing some weird dependency drama.
 
