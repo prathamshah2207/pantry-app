@@ -26,6 +26,7 @@ if (!fs.existsSync(DATA_DIR))
 --------------------- */
 app.use(express.static('inventory'));
 app.use(express.static('user'))
+app.use(express.static('public'))
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
@@ -39,7 +40,7 @@ app.use(cors());
  */
 
 app.get('/', (req,res) => {
-    res.sendFile("index.html", {root: __dirname});
+    res.sendFile("public/index.html", {root: __dirname});
 });
 
 

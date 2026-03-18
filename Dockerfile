@@ -6,7 +6,7 @@ COPY *.json ./
 COPY server.js ./
 COPY inventory ./inventory
 COPY user ./user
-COPY index.html ./
+COPY public ./public
 
 RUN npm install
 

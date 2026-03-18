@@ -2,53 +2,55 @@
 <html>
 <head>
 	<title>User Profile</title>
+	<link rel="stylesheet" href="userpage.css">
 </head>
 <body>
-	<p><a href="/">Home</a></p>
-	<h1><center><b>User Profile</b></center></h1>
+	<div class="container">
+		<p><a href="/">Home</a></p>
+		<h1><center><b>User Profile</b></center></h1>
 
-	<form id="profileForm">
-		<p>
-			<label>Display Name:</label>
-			<span id="displayName"></span>
-			<input type="text" id="editDisplayName" hidden>
-		</p>
+		<form id="profileForm">
+			<p>
+				<label>Display Name:</label>
+				<span id="displayName"></span>
+				<input type="text" id="editDisplayName" hidden>
+			</p>
 
-		<p>
-			<label>Username:</label>
-			<span id="username"></span>
-		</p>
+			<p>
+				<label>Username:</label>
+				<span id="username"></span>
+			</p>
 
-		<p>
-			<label>Email:</label>
-			<span id="email"></span>
-			<input type="email" id="editEmail" hidden>
-		</p>
+			<p>
+				<label>Email:</label>
+				<span id="email"></span>
+				<input type="email" id="editEmail" hidden>
+			</p>
 
-		<p>
-			<label>Diet Preference:</label>
-			<span id="dietPreference"></span>
-			<select id="editDietPreference" hidden>
-				<option value="">None</option>
-				<option value="vegetarian">Vegetarian</option>
-				<option value="vegan">Vegan</option>
-				<option value="halal">Halal</option>
-				<option value="gluten-free">Gluten-Free</option>
-			</select>
-		</p>
+			<p>
+				<label>Diet Preference:</label>
+				<span id="dietPreference"></span>
+				<select id="editDietPreference" hidden>
+					<option value="">None</option>
+					<option value="vegetarian">Vegetarian</option>
+					<option value="vegan">Vegan</option>
+					<option value="halal">Halal</option>
+					<option value="gluten-free">Gluten-Free</option>
+				</select>
+			</p>
 
-		<p id="normalButtons">
-			<button type="button" id="editButton">Edit</button>
-			<button type="button" id="inventoryButton">Inventory</button>
-			<button type="button" id="recipesButton">Your recipes</button>
-		</p>
+			<p id="normalButtons">
+				<button type="button" id="editButton">Edit</button>
+				<button type="button" id="inventoryButton">Inventory</button>
+				<button type="button" id="recipesButton">Your recipes</button>
+			</p>
 
-		<p id="editButtons" hidden>
-			<button type="submit">Save</button>
-		</p>
-	</form>
-
-
+			<p id="editButtons" hidden>
+				<button type="submit">Save</button>
+			</p>
+		</form>
+	</div>
+	
 
 	<script>
 		let currentUser = null;

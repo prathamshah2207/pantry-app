@@ -2,52 +2,54 @@
 <html>
 <head>
 	<title>Create Profile</title>
+	<link rel="stylesheet" href="userpage.css">
 </head>
 <body>
-	<h1><center><b>Create Profile</b></center></h1>
+	<div class="container">
+		<h1><center><b>Create Profile</b></center></h1>
 
-	<form id="signupForm">
-		<p>
-			<label>Display Name:</label>
-			<input type="text" id="name" required>
-		</p>
+		<form id="signupForm">
+			<p>
+				<label>Display Name:</label>
+				<input type="text" id="name" required>
+			</p>
 
-		<p>
-			<label>Username:</label>
-			<input type="text" id="username" required>
-		</p>
+			<p>
+				<label>Username:</label>
+				<input type="text" id="username" required>
+			</p>
 
-		<p>
-			<label>Email:</label>
-			<input type="email" id="email">
-		</p>
+			<p>
+				<label>Email:</label>
+				<input type="email" id="email">
+			</p>
 
-		<p>
-			<label>Password:</label>
-			<input type="password" id="password" required>
-		</p>
+			<p>
+				<label>Password:</label>
+				<input type="password" id="password" required>
+			</p>
 
-		<p>
-			<label>Diet Preference:</label>
-			<select id="dietPreference">
-				<option value="">None</option>
-				<option value="vegetarian">Vegetarian</option>
-				<option value="vegan">Vegan</option>
-				<option value="halal">Halal</option>
-				<option value="gluten-free">Gluten-Free</option>
-			</select>
-		</p>
+			<p>
+				<label>Diet Preference:</label>
+				<select id="dietPreference">
+					<option value="">None</option>
+					<option value="vegetarian">Vegetarian</option>
+					<option value="vegan">Vegan</option>
+					<option value="halal">Halal</option>
+					<option value="gluten-free">Gluten-Free</option>
+				</select>
+			</p>
 
-		<p>
-			<label>Allow Substitutions:</label>
-			<input type="checkbox" id="allowSubstitutions" checked>
-		</p>
+			<p>
+				<label>Allow Substitutions:</label>
+				<input type="checkbox" id="allowSubstitutions" checked>
+			</p>
 
-		<p>
-			<button type="submit">Create Profile</button>
-		</p>
-	</form>
-
+			<p>
+				<button type="submit">Create Profile</button>
+			</p>
+		</form>
+	</div>
 	<p id="message"></p>
 
 	<script>
