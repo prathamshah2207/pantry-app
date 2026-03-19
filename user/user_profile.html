@@ -61,7 +61,7 @@
 				const data = await response.json();
 
 				if (!data.exists) {
-					window.location.href = "signup.html";
+					window.location.replace("signup.html");
 					return;
 				}
 
@@ -144,6 +144,9 @@
 		document.getElementById("editButton").addEventListener("click", enableEditMode);
 		document.getElementById("inventoryButton").addEventListener("click", () => {
 			window.location.href = "/invpage.html";
+		});
+		document.getElementById("recipesButton").addEventListener("click", () => {
+			window.location.href = "/recipepage.html";
 		});
 		document.getElementById("profileForm").addEventListener("submit", saveUserChanges);
 

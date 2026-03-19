@@ -27,6 +27,7 @@ if (!fs.existsSync(DATA_DIR))
 app.use(express.static('inventory'));
 app.use(express.static('user'))
 app.use(express.static('public'))
+app.use(express.static('recipe-app'))
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
