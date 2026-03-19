@@ -41,7 +41,7 @@ app.use(cors());
  */
 
 app.get('/', (req,res) => {
-    res.sendFile("public/index.html", {root: __dirname});
+	res.sendFile("public/index.html", {root: __dirname});
 });
 
 
@@ -52,129 +52,129 @@ app.get('/', (req,res) => {
  */
 
 app.get('/api/getmsg', async (req, res) => {
-    try {
+	try {
 
-        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-        const items = JSON.parse(data);
+		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
+		const items = JSON.parse(data);
 
-        res.json(items);
+		res.json(items);
 
-    } catch (err) {
+	} catch (err) {
 
-        console.error(err);
-        res.status(500).json({ error: 'Failed to read messages' });
+		console.error(err);
+		res.status(500).json({ error: 'Failed to read messages' });
 
-    }
+	}
 })
 
 app.post('/api/sendmsg', async (req, res) => {
-    const { quant, name, cals, defa } = req.body;
+	const { quant, name, cals, defa } = req.body;
 
-    try {
+	try {
 
-        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-        const items = JSON.parse(data);
+		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
+		const items = JSON.parse(data);
 
-        const entry = {
-            id: Date.now(),
-            quant,
-            name,
-            cals,
-            defa
-        };
+		const entry = {
+			id: Date.now(),
+			quant,
+			name,
+			cals,
+			defa
+		};
 
-        items.push(entry);
+		items.push(entry);
 
-        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(items, null, 2));
+		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(items, null, 2));
 
-        res.send('Saved');
+		res.send('Saved');
 
-    } catch (err) {
+	} catch (err) {
 
-        res.status(500).send('Write failed');
+		res.status(500).send('Write failed');
 
-    }
+	}
 });
 
 app.post('/api/editmsg', async (req, res) => {
 
-    const { id, quant, name, cals, defa } = req.body;
+	const { id, quant, name, cals, defa } = req.body;
 
-    try {
+	try {
 
-        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-        const items = JSON.parse(data);
+		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
+		const items = JSON.parse(data);
 
-        const updated = items.map(item =>
-            item.id == id
-                ? { id, quant, name, cals, defa }
-                : item
-        );
+		const updated = items.map(item =>
+			item.id == id
+				? { id, quant, name, cals, defa }
+				: item
+		);
 
-        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
+		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
 
-        res.send('Edited');
+		res.send('Edited');
 
-    } catch (err) {
+	} catch (err) {
 
-        res.status(500).send('Edit failed');
+		res.status(500).send('Edit failed');
 
-    }
+	}
 });
 
 app.post('/api/resetmsg', async (req, res) => {
 
-    const { id } = req.body;
+	const { id } = req.body;
 
-    try {
+	try {
 
-        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-        const items = JSON.parse(data);
+		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
+		const items = JSON.parse(data);
 
-        const updated = items.map(item => {
-            if (item.id == id) {
-                item.quant = item.defa;
-            }
-            return item;
-        });
+		const updated = items.map(item => {
+			if (item.id == id) {
+				item.quant = item.defa;
+			}
+			return item;
+		});
 
-        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
+		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
 
-        res.send('Reset');
+		res.send('Reset');
 
-    } catch (err) {
+	} catch (err) {
 
-        res.status(500).send('Reset failed');
+		res.status(500).send('Reset failed');
 
-    }
+	}
 
 });
 
 app.post('/api/deletemsg', async (req, res) => {
 
-    const { id } = req.body;
+	const { id } = req.body;
 
-    try {
+	try {
 
-        const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-        const items = JSON.parse(data);
+		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
+		const items = JSON.parse(data);
 
-        const filtered = items.filter(item => item.id != id);
+		const filtered = items.filter(item => item.id != id);
 
-        await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(filtered, null, 2));
+		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(filtered, null, 2));
 
-        res.send('Deleted');
+		res.send('Deleted');
 
-    } catch (err) {
+	} catch (err) {
 
-        res.status(500).send('Delete failed');
+		res.status(500).send('Delete failed');
 
-    }
+	}
 
 });
 
 app.get('/gp', (req,res) => {
-    res.json(INV_DATA_FILE);
+	res.json(INV_DATA_FILE);
 });
 
 /*#########			END OF INVENTORY API		############*/
@@ -293,5 +293,5 @@ app.put("/user", (req, res) => {
 
 
 app.listen(PORT, HOST, () => {
-    console.log(`Server running on ${PORT} by host ${HOST}`);
+	console.log(`Server running on ${PORT} by host ${HOST}`);
 });

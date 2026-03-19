@@ -53,6 +53,12 @@ let items = [];
 ----------------------- */
 async function loadItems() {
 
+    const userRes = await fetch('/user');
+    const userData = await userRes.json();
+    if (!data.exists){
+        window.location.replace('/user/signup.html');
+        return;
+    }
     const res = await fetch('/api/getmsg');
     items = await res.json();
 
