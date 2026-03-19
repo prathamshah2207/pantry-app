@@ -53,6 +53,19 @@
 	<p id="message"></p>
 
 	<script>
+		async function checkUser() {
+			try {
+				const resp = await fetch("/user");
+				const data = await resp.json();
+				if (data.exists)
+					window.location.replace('/');
+			}
+			catch (err){
+				console.error("Error checkin user: ", err);
+			}
+		}
+		checkUser();
+
 		const signupForm = document.getElementById("signupForm");
 		const message = document.getElementById("message");
 
