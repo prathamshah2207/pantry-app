@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const cors = require("cors");
+//const cors = require('cors');
 
 const HOST = '0.0.0.0';
 const PORT = 80;
@@ -30,7 +30,7 @@ app.use(express.static('public'))
 app.use(express.static('recipe-app'))
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cors());
+//app.use(cors());
 //tells Express to serve static files (HTML, CSS, images, client-side JS)
 // from a folder called public.
 /*****
