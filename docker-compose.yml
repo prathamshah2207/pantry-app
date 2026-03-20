@@ -7,3 +7,20 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_1
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pantry_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
