@@ -51,6 +51,17 @@ app.get('/', (req,res) => {
  * *****************************************************************
  */
 
+const INGRED_FILE = path.join(__dirname, 'inventory', 'data', 'ingred.json');
+
+app.get('/api/ingredients', async (req, res) => {
+    try {
+        const data = await fsPromises.readFile(INGRED_FILE, 'utf8');
+        res.json(JSON.parse(data));
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load ingredients' });
+    }
+});
+
 app.get('/api/getmsg', async (req, res) => {
     try {
 
