@@ -29,7 +29,6 @@ const db = mysql.createPool({
 if (!fs.existsSync(DATA_DIR))
 	fs.mkdirSync(DATA_DIR);
 
-
 /* --------------------
    NEW: server HTML
 --------------------- */
@@ -249,6 +248,8 @@ app.post("/signup", async (req, res) => {
 				allowSubstitutions
 			]
 		);
+		await fsPromises.writeFile(USER_DATA_FILE, JSON.stringify({ userId: result.insertId }));
+		await fsPromises.writeFile(INV_DATA_FILE, '[]');
 		res.status(201).json({
 			message: "User created successfully",
 			user: {
