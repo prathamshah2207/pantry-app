@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const cors = require("cors");
+const mysql = require("mysql2/promise");
 
 const HOST = '0.0.0.0';
 const PORT = 80;
@@ -15,6 +16,14 @@ const fsPromises = fs.promises;
 const DATA_DIR = path.join(__dirname, 'data');
 const USER_DATA_FILE = path.join(__dirname, 'data', "user.json");
 const INV_DATA_FILE = path.join(__dirname, 'data', 'inv.json');
+
+const db = mysql.createPool({
+	host: 'db',
+	user: 'root',
+	password: 'root',
+	database: 'pantry_app',
+	waitForConnections: true
+})
 
 /* ########### NEED DATA FOLDER OR IT WILL CRASH */
 if (!fs.existsSync(DATA_DIR))
@@ -186,67 +195,75 @@ app.get('/gp', (req,res) => {
  * ***************************************************************
  */
 
-app.get("/user", (req, res) => {
+app.get("/user", async (req, res) => {
 	try {
-		if (!fs.existsSync(USER_DATA_FILE)) {
-			return res.json({ exists: false, user: null });
+		const [rows] = await db.query("SELECT id, name, username, email, diet_preference, allow_substitutions FROM users LIMIT 1");
+		if (rows.length === 0) {
+			return res.json({
+				exists: false,
+				user: null
+			});
 		}
 
-		const fileData = fs.readFileSync(USER_DATA_FILE, "utf8");
-
-		if (!fileData || fileData === "null") {
-			return res.json({ exists: false, user: null });
-		}
-
-		const user = JSON.parse(fileData);
-
+		const user = rows[0];
 		res.json({
 			exists: true,
-			user
+			user: {
+				id: user.id,
+				name: user.name,
+				username: user.username,
+				email: user.email,
+				dietPreference: user.diet_preference,
+				allowSubstitutions: !!user.allow_substitutions
+			}
 		});
 	}
 	catch (error) {
-		res.status(500).json({ message: "Error reading user data" });
+		console.error(error);
+		res.status(500).json({message: "error reading user data"});
 	}
 });
 
-app.post("/user", (req, res) => {
+app.post("/user", async (req, res) => {
 	const { name, username, email, password, dietPreference, allowSubstitutions } = req.body;
 
 	if (!name || !username || !password) {
 		return res.status(400).json({
-			message: "Name, username, and password are required"
+			message: "name, username, and password are required"
 		});
 	}
-	
-	if (!fs.existsSync(USER_DATA_FILE)) {
-/////////////////		NEW USER CREATION ALSO CREATES EMPTY INV FILE
-		fs.writeFileSync(USER_DATA_FILE, "null");
-		fs.writeFileSync(INV_DATA_FILE, "[]")
+
+	try {
+		const [result] = await db.query(
+			`INSERT INTO users (name, username, email, password, diet_preference, allow_substitutions) VALUES (?, ?, ?, ?, ?, ?)`,
+			[
+				name,
+				username,
+				email,
+				password,
+				dietPreference,
+				allowSubstitutions
+			]
+		);
+
+		res.status(201).json({
+			message: "User created successfully",
+			user: {
+				id: result.insertId,
+				name,
+				username,
+				email: email,
+				dietPreference: dietPreference,
+				allowSubstitutions: allowSubstitutions
+			}
+		});
 	}
-
-	// const existingData = fs.readFileSync(USER_DATA_FILE, "utf8");
-	// if (existingData && existingData !== "null") {
-	// 	return res.status(409).json({
-	// 		message: "User profile already exists on this device"
-	// 	});
-	// }
-
-	const newUser = {
-		name,
-		username,
-		email: email || "",
-		password,
-		dietPreference: dietPreference || "",
-		allowSubstitutions: allowSubstitutions ?? true
-	};
-
-	fs.writeFileSync(USER_DATA_FILE, JSON.stringify(newUser, null, 2));
-
-	res.status(201).json({
-		message: "User profile created successfully",
-		user: newUser
-	});
+	catch (error) {
+		console.error(error);
+		res.status(500).json({
+			message: "Error creating user"
+		});
+	}
 });
 
 app.put("/user", (req, res) => {
