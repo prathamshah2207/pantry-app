@@ -197,7 +197,15 @@ app.get('/gp', (req,res) => {
 
 app.get("/user", async (req, res) => {
 	try {
-		const [rows] = await db.query("SELECT id, name, username, email, diet_preference, allow_substitutions FROM users LIMIT 1");
+		if (!fs.existsSync(USER_DATA_FILE)) 
+			return res.json({
+				exists: false,
+				user: null
+			});
+		const session = JSON.parse(fs.readFileSync(USER_DATA_FILE));
+		const [rows] = await db.query(`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`, 
+			[session.userId]
+		);
 		if (rows.length === 0) {
 			return res.json({
 				exists: false,
