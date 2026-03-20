@@ -18,7 +18,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: pantry_app
     ports:
-      - "3000:3000"
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 

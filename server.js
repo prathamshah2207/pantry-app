@@ -224,14 +224,10 @@ app.get("/user", async (req, res) => {
 	}
 });
 
-app.post("/user", async (req, res) => {
+app.post("/signup", async (req, res) => {
 	const { name, username, email, password, dietPreference, allowSubstitutions } = req.body;
-
-	if (!name || !username || !password) {
-		return res.status(400).json({
-			message: "name, username, and password are required"
-		});
-	}
+	if (!name || !username || !password) 
+		return res.status(400).json({message: "Name, username, and password are required"});
 
 	try {
 		const [result] = await db.query(
@@ -245,7 +241,6 @@ app.post("/user", async (req, res) => {
 				allowSubstitutions
 			]
 		);
-
 		res.status(201).json({
 			message: "User created successfully",
 			user: {
@@ -258,10 +253,55 @@ app.post("/user", async (req, res) => {
 			}
 		});
 	}
+	catch (err) {
+		console.error(err);
+		res.status(500).json({message: "Error creating user"});
+	}
+});
+
+app.post("/login", async (req, res) => {
+	const { username, password } = req.body;
+	if (!username || !password)
+		return res.status(400).json({message: "Username and password are required"});
+
+	try {
+		const [rows] = await db.query(
+			`SELECT id, name, username, email, password, diet_preference, allow_substitutions
+			 FROM users
+			 WHERE username = ?`,
+			[username]
+		);
+
+		if (rows.length === 0) {
+			return res.status(401).json({
+				message: "Invalid username or password"
+			});
+		}
+
+		const user = rows[0];
+
+		if (user.password !== password) {
+			return res.status(401).json({
+				message: "Invalid username or password"
+			});
+		}
+		fs.writeFileSync(USER_DATA_FILE, JSON.stringify({ userId: user.id }));
+		res.json({
+			message: "Login successful",
+			user: {
+				id: user.id,
+				name: user.name,
+				username: user.username,
+				email: user.email,
+				dietPreference: user.diet_preference,
+				allowSubstitutions: !!user.allow_substitutions
+			}
+		});
+	}
 	catch (error) {
 		console.error(error);
 		res.status(500).json({
-			message: "Error creating user"
+			message: "Error logging in"
 		});
 	}
 });
