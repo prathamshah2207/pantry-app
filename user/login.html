@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Login</title>
+	<link rel="stylesheet" href="userpage.css">
+</head>
+<body>
+	<div class="container">
+		<h1><center><b>Login</b></center></h1>
+
+		<form id="loginForm">
+			<p>
+				<label>Username:</label>
+				<input type="text" id="username" required>
+			</p>
+			<p>
+				<label>Password:</label>
+				<input type="password" id="password" required>
+			</p>
+			<p>
+				<button type="submit">Login</button>
+			</p>
+		</form>
+
+		<p>If first timer then, <a href="signup.html">Create Profile</a></p>
+		<p id="message"></p>
+	</div>
+
+	<script>
+		async function checkUser() {
+			try {
+				const resp = await fetch("/user");
+				const data = await resp.json();
+
+				if (data.exists) {
+					window.location.replace("/");
+				}
+			}
+			catch (err) {
+				console.error("Error checking user:", err);
+			}
+		}
+		checkUser();
+
+		const loginForm = document.getElementById("loginForm");
+		const message = document.getElementById("message");
+
+		loginForm.addEventListener("submit", async function(event) {
+			event.preventDefault();
+
+			const loginData = {
+				username: document.getElementById("username").value,
+				password: document.getElementById("password").value
+			};
+
+			try {
+				const response = await fetch("/login", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify(loginData)
+				});
+
+				const data = await response.json();
+				if (response.ok) {
+					message.textContent = data.message;
+					window.location.href = "user_profile.html";
+				}
+				else {
+					message.textContent = data.message;
+				}
+			}
+			catch (err) {
+				message.textContent = "Error logging in.";
+				console.error(err);
+			}
+		});
+	</script>
+</body>
+</html>
