@@ -37,7 +37,7 @@
 
 <body>
 
-    <button>Back</button>
+    <button id="back">Back</button>
 
     <h1 style="text-align: center;">Inventory</h1>
 
@@ -68,6 +68,10 @@
 <script>
 
 let items = [];
+
+document.getElementById("back").addEventListener("click", () => {
+    window.location.href = "/";
+});
 
 /* -----------------------
    Load inventory
