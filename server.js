@@ -110,7 +110,7 @@ app.post('/api/sendmsg', async (req, res) => {
 
 app.post('/api/editmsg', async (req, res) => {
 
-    const { id, quant, name, cals, defa } = req.body;
+    const { id, quant, name, cals, defa, unit } = req.body;
 
     try {
 
