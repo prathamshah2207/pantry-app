@@ -315,40 +315,61 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-app.put("/user", (req, res) => {
+app.put("/user", async (req, res) => {
 	try {
-		if (!fs.existsSync(USER_DATA_FILE)) {
+
+		const sessionData = fs.readFileSync(USER_DATA_FILE, "utf8");
+		if (!sessionData || !JSON.parse(sessionData).userId) {
 			return res.status(404).json({
-				message: "No user profile found"
+				message: "No active user session found"
 			});
 		}
 
-		const fileData = fs.readFileSync(USER_DATA_FILE, "utf8");
+		const session = JSON.parse(sessionData);
 
-		if (!fileData || fileData === "null") {
-			return res.status(404).json({
-				message: "No user profile found"
-			});
-		}
-
-		const existingUser = JSON.parse(fileData);
 		const { name, email, dietPreference } = req.body;
 
-		const updatedUser = {
-			...existingUser,
-			name: name ?? existingUser.name,
-			email: email ?? existingUser.email,
-			dietPreference: dietPreference ?? existingUser.dietPreference
-		};
+		const [rows] = await db.query(
+			`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`,
+			[session.userId]
+		);
 
-		fs.writeFileSync(USER_DATA_FILE, JSON.stringify(updatedUser, null, 2));
+		const existingUser = rows[0];
+		const updatedName = name ?? existingUser.name;
+		const updatedEmail = email ?? existingUser.email;
+		const updatedDietPreference = dietPreference ?? existingUser.diet_preference;
+
+		await db.query(
+			`UPDATE users SET name = ?, email = ?, diet_preference = ? WHERE id = ?`,
+			[
+				updatedName,
+				updatedEmail,
+				updatedDietPreference,
+				session.userId
+			]
+		);
+
+		const [updatedRows] = await db.query(
+			`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`,
+			[session.userId]
+		);
+
+		const user = updatedRows[0];
 
 		res.json({
 			message: "User profile updated successfully",
-			user: updatedUser
+			user: {
+				id: user.id,
+				name: user.name,
+				username: user.username,
+				email: user.email,
+				dietPreference: user.diet_preference,
+				allowSubstitutions: !!user.allow_substitutions
+			}
 		});
 	}
 	catch (error) {
+		console.error(error);
 		res.status(500).json({
 			message: "Error updating user profile"
 		});
