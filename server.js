@@ -201,7 +201,7 @@ app.get("/user", async (req, res) => {
 				exists: false,
 				user: null
 			});
-		const session = JSON.parse(fs.readFileSync(USER_DATA_FILE));
+		const session = JSON.parse(fs.readFileSync(USER_DATA_FILE, "utf8"));
 		const [rows] = await db.query(`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`, 
 			[session.userId]
 		);
@@ -313,6 +313,13 @@ app.post("/login", async (req, res) => {
 			message: "Error logging in"
 		});
 	}
+});
+
+app.post("/logout", (req, res) => {
+	fs.unlinkSync(USER_DATA_FILE);
+	res.json({
+		message: "Logged out successfully"
+	});
 });
 
 app.put("/user", async (req, res) => {
