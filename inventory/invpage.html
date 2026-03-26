@@ -158,8 +158,8 @@ function makepopup() {
         <h3>Add Item</h3>
 
         <select id="ingredientSelect" onchange="updateCalories()"> ${options} </select>
-        <label> Quantity: <input id="quant" type="number" placeholder="quantity"> </label>
-        <label> Per restock: <input id="defa" type="number" placeholder="default restock"> </label>
+        <label> Quantity: <input id="quant" type="number" min="0" placeholder="quantity"> </label>
+        <label> Per restock: <input id="defa" type="number" min="0" placeholder="default restock"> </label>
         <label> Unit: <input id="unit" placeholder="unit" disabled> </label>
         <label> Calories: <input id="cals" placeholder="calories" disabled> </label>
         <button onclick="addItem()">Save</button>
@@ -191,8 +191,8 @@ function openEdit(id) {
 
     popup.innerHTML = `
         <h3>Edit Item</h3>
-        <label> Quantity: <input id="quant" type="number" value="${item.quant}"> </label>
-        <label> Per restock: <input id="defa" type="number" value="${item.defa}"> </label>
+        <label> Quantity: <input id="quant" type="number" min="0" value="${item.quant}"> </label>
+        <label> Per restock: <input id="defa" type="number" min="0" value="${item.defa}"> </label>
         <label> Unit: <input id="unit" value="${item.unit}" disabled> </label>
         <label> Name: <input id="name" value="${item.name}" disabled> </label>
         <label> Calories: <input id="cals" value="${item.cals}" disabled> </label>
