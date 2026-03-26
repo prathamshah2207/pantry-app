@@ -316,7 +316,9 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-	fs.unlinkSync(USER_DATA_FILE);
+	if (fs.existsSync(USER_DATA_FILE)) {
+		fs.unlinkSync(USER_DATA_FILE);
+	}
 	res.json({
 		message: "Logged out successfully"
 	});

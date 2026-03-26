@@ -43,6 +43,7 @@
 				<button type="button" id="editButton">Edit</button>
 				<button type="button" id="inventoryButton">Inventory</button>
 				<button type="button" id="recipesButton">Your recipes</button>
+				<button type="button" id="logoutButton">Logout</button>
 			</p>
 
 			<p id="editButtons" hidden>
@@ -149,6 +150,10 @@
 			window.location.href = "/recipepage.html";
 		});
 		document.getElementById("profileForm").addEventListener("submit", saveUserChanges);
+		document.getElementById("logoutButton").addEventListener("click", async () => {
+			await fetch("/logout", {method: "POST"});
+			window.location.href = "/index.html";
+		});
 
 		loadUser();
 	</script>
