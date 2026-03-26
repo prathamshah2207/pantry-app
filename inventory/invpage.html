@@ -12,11 +12,32 @@
         display: block;
         margin: 0px auto;
     }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20;
+        padding: 0;
+        background-color: #f4f4f4;
+        color: #222;
+        text-align: left;
+    }
+    button {
+        padding: 5px 5px;
+        margin: 0px;
+        border: 1px solid #999;
+        border-radius: 5px;
+        background-color: #eee;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    button:hover {
+        background-color: #ddd;
+    }
 </style>
 
 <body>
 
-    <button>Back</button>
+    <button id="back">Back</button>
 
     <h1 style="text-align: center;">Inventory</h1>
 
@@ -48,6 +69,10 @@
 
 let items = [];
 
+document.getElementById("back").addEventListener("click", () => {
+    window.location.href = "/";
+});
+
 /* -----------------------
    Load inventory
 ----------------------- */
@@ -63,6 +88,11 @@ async function loadItems() {
     items = await res.json();
 
     renderTable();
+}
+
+async function loadIngredients() {
+    const res = await fetch('/api/ingredients');
+    ingredients = await res.json();
 }
 
 /* -----------------------
@@ -105,19 +135,52 @@ function renderTable() {
 /* -----------------------
    Add item popup
 ----------------------- */
+// function makepopup() {
+
+//     const popup = document.getElementById('popup');
+
+//     popup.innerHTML = `
+//         <h3>Add Item</h3>
+//         <input id="quant" placeholder="quantity">
+//         <input id="name" placeholder="name">
+//         <input id="cals" placeholder="calories">
+//         <input id="defa" placeholder="default restock">
+//         <button onclick="addItem()">Save</button>
+//         <button onclick="closePopup()">Cancel</button>
+//     `;
+// }
+
+let ingredients = [];
+
 function makepopup() {
 
     const popup = document.getElementById('popup');
 
+    const options = ingredients.map((ing, i) =>
+        `<option value="${i}">${ing.name}</option>`
+    ).join('');
+
     popup.innerHTML = `
         <h3>Add Item</h3>
-        <input id="quant" placeholder="quantity">
-        <input id="name" placeholder="name">
-        <input id="cals" placeholder="calories">
-        <input id="defa" placeholder="default restock">
+
+        <select id="ingredientSelect" onchange="updateCalories()"> ${options} </select>
+        <label> Quantity: <input id="quant" type="number" placeholder="quantity"> </label>
+        <label> Per restock: <input id="defa" type="number" placeholder="default restock"> </label>
+        <label> Calories: <input id="cals" placeholder="calories" disabled> </label>
         <button onclick="addItem()">Save</button>
         <button onclick="closePopup()">Cancel</button>
     `;
+
+    updateCalories(); // set initial calories
+}
+
+function updateCalories() {
+
+    const index = document.getElementById('ingredientSelect').value;
+
+    const selected = ingredients[index];
+
+    document.getElementById('cals').value = selected.cals;
 }
 
 /* -----------------------
@@ -131,10 +194,10 @@ function openEdit(id) {
 
     popup.innerHTML = `
         <h3>Edit Item</h3>
-        <input id="quant" value="${item.quant}">
-        <input id="name" value="${item.name}">
-        <input id="cals" value="${item.cals}">
-        <input id="defa" value="${item.defa}">
+        <label> Quantity: <input id="quant" type="number" value="${item.quant}"> </label>
+        <label> Per restock: <input id="defa" type="number" value="${item.defa}"> </label>
+        <label> Name: <input id="name" value="${item.name}" disabled> </label>
+        <label> Calories: <input id="cals" value="${item.cals}" disabled> </label>
         <button onclick="saveEdit(${id})">Save</button>
         <button onclick="closePopup()">Cancel</button>
     `;
@@ -150,12 +213,33 @@ function closePopup() {
 /* -----------------------
    Add item
 ----------------------- */
+// async function addItem() {
+
+//     const quant = document.getElementById('quant').value;
+//     const name = document.getElementById('name').value;
+//     const cals = document.getElementById('cals').value;
+//     const defa = document.getElementById('defa').value;
+
+//     await fetch('/api/sendmsg', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ quant, name, cals, defa })
+//     });
+
+//     closePopup();
+//     loadItems();
+// }
+
 async function addItem() {
 
     const quant = document.getElementById('quant').value;
-    const name = document.getElementById('name').value;
-    const cals = document.getElementById('cals').value;
     const defa = document.getElementById('defa').value;
+
+    const index = document.getElementById('ingredientSelect').value;
+    const selected = ingredients[index];
+
+    const name = selected.name;
+    const cals = selected.cals;
 
     await fetch('/api/sendmsg', {
         method: 'POST',
@@ -219,6 +303,7 @@ async function resetItem(id) {
    Start page
 ----------------------- */
 loadItems();
+loadIngredients();
 
 </script>
 

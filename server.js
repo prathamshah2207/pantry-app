@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const cors = require("cors");
+// const cors = require("cors");
 const mysql = require("mysql2/promise");
 
 const HOST = '0.0.0.0';
@@ -38,7 +38,7 @@ app.use(express.static('public'))
 app.use(express.static('recipe-app'))
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cors());
+//app.use(cors());
 //tells Express to serve static files (HTML, CSS, images, client-side JS)
 // from a folder called public.
 /*****
@@ -58,6 +58,17 @@ app.get('/', (req,res) => {
  * 						INVENTORY	API
  * *****************************************************************
  */
+
+const INGRED_FILE = path.join(__dirname, 'inventory', 'data', 'ingred.json');
+
+app.get('/api/ingredients', async (req, res) => {
+    try {
+        const data = await fsPromises.readFile(INGRED_FILE, 'utf8');
+        res.json(JSON.parse(data));
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load ingredients' });
+    }
+});
 
 app.get('/api/getmsg', async (req, res) => {
 	try {
