@@ -112,7 +112,7 @@ function renderTable() {
         const row = document.createElement('tr');
 
         row.innerHTML = `
-            <td>${item.quant}/${item.defa}</td>
+            <td>${item.quant}/${item.defa} ${item.unit}</td>
             <td>${item.name}</td>
             <td>${item.cals}</td>
             <td><button onclick="openEdit(${item.id})">Edit</button></td>
@@ -160,6 +160,7 @@ function makepopup() {
         <select id="ingredientSelect" onchange="updateCalories()"> ${options} </select>
         <label> Quantity: <input id="quant" type="number" placeholder="quantity"> </label>
         <label> Per restock: <input id="defa" type="number" placeholder="default restock"> </label>
+        <label> Unit: <input id="unit" placeholder="unit" disabled> </label>
         <label> Calories: <input id="cals" placeholder="calories" disabled> </label>
         <button onclick="addItem()">Save</button>
         <button onclick="closePopup()">Cancel</button>
@@ -175,6 +176,8 @@ function updateCalories() {
     const selected = ingredients[index];
 
     document.getElementById('cals').value = selected.cals;
+    
+    document.getElementById('unit').value = selected.unit;
 }
 
 /* -----------------------
@@ -190,6 +193,7 @@ function openEdit(id) {
         <h3>Edit Item</h3>
         <label> Quantity: <input id="quant" type="number" value="${item.quant}"> </label>
         <label> Per restock: <input id="defa" type="number" value="${item.defa}"> </label>
+        <label> Unit: <input id="unit" value="${item.unit}" disabled> </label>
         <label> Name: <input id="name" value="${item.name}" disabled> </label>
         <label> Calories: <input id="cals" value="${item.cals}" disabled> </label>
         <button onclick="saveEdit(${id})">Save</button>
@@ -207,22 +211,6 @@ function closePopup() {
 /* -----------------------
    Add item
 ----------------------- */
-// async function addItem() {
-
-//     const quant = document.getElementById('quant').value;
-//     const name = document.getElementById('name').value;
-//     const cals = document.getElementById('cals').value;
-//     const defa = document.getElementById('defa').value;
-
-//     await fetch('/api/sendmsg', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ quant, name, cals, defa })
-//     });
-
-//     closePopup();
-//     loadItems();
-// }
 
 async function addItem() {
 
@@ -234,11 +222,12 @@ async function addItem() {
 
     const name = selected.name;
     const cals = selected.cals;
+    const unit = selected.unit;
 
     await fetch('/api/sendmsg', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quant, name, cals, defa })
+        body: JSON.stringify({ quant, name, cals, defa, unit })
     });
 
     closePopup();
@@ -254,11 +243,12 @@ async function saveEdit(id) {
     const name = document.getElementById('name').value;
     const cals = document.getElementById('cals').value;
     const defa = document.getElementById('defa').value;
+    const unit = document.getElementById('unit').value;
 
     await fetch('/api/editmsg', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, quant, name, cals, defa })
+        body: JSON.stringify({ id, quant, name, cals, defa, unit })
     });
 
     closePopup();

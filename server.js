@@ -79,7 +79,7 @@ app.get('/api/getmsg', async (req, res) => {
 })
 
 app.post('/api/sendmsg', async (req, res) => {
-    const { quant, name, cals, defa } = req.body;
+    const { quant, name, cals, defa, unit } = req.body;
 
     try {
 
@@ -91,7 +91,8 @@ app.post('/api/sendmsg', async (req, res) => {
             quant,
             name,
             cals,
-            defa
+            defa,
+            unit
         };
 
         items.push(entry);
@@ -118,7 +119,7 @@ app.post('/api/editmsg', async (req, res) => {
 
         const updated = items.map(item =>
             item.id == id
-                ? { id, quant, name, cals, defa }
+                ? { id, quant, name, cals, defa, unit }
                 : item
         );
 
