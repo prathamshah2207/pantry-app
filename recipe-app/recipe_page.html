@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Recipe Tracker</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 400px;
+    margin: 50px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-top: 20px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+#result {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #333;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🍽 Recipe Tracker</h1>
+
+<h3>Create Recipe</h3>
+<input id="recipeName" placeholder="Enter recipe name">
+<button onclick="createRecipe()">Create Recipe</button>
+
+<h3>Add Ingredient</h3>
+
+<select id="ingredient">
+<option value="1.65">Chicken</option>
+<option value="1.30">Rice</option>
+<option value="8.8">Olive Oil</option>
+<option value="1.55">Egg</option>
+<option value="2.5">Beef</option>
+<option value="0.34">Broccoli</option>
+<option value="0.41">Carrot</option>
+<option value="0.77">Potato</option>
+<option value="4.02">Cheese</option>
+</select>
+
+<input id="qty" placeholder="Quantity">
+
+<button onclick="addIngredient()">Add Ingredient</button>
+
+<h3>Ingredients Added</h3>
+<ul id="list"></ul>
+
+<h3>Calories</h3>
+<button onclick="calcCalories()">Calculate Calories</button>
+
+<p id="result">Total Calories: 0</p>
+
+</div>
+
+<script>
+
+let ingredients = [];
+
+function createRecipe() {
+    let name = document.getElementById("recipeName").value;
+    alert("Recipe Created: " + name);
+}
+
+function addIngredient() {
+
+    let select = document.getElementById("ingredient");
+    let name = select.options[select.selectedIndex].text;
+    let calories = parseFloat(select.value);
+    let quantity = parseFloat(document.getElementById("qty").value);
+
+    if (!quantity) {
+        alert("Enter valid quantity");
+        return;
+    }
+
+    ingredients.push({ name, calories, quantity });
+
+    let li = document.createElement("li");
+    li.innerText = name + " - " + quantity;
+    document.getElementById("list").appendChild(li);
+}
+
+function calcCalories() {
+
+    let total = 0;
+
+    ingredients.forEach(i => {
+        total += i.calories * i.quantity;
+    });
+
+    document.getElementById("result").innerText =
+        "Total Calories: " + total;
+}
+
+</script>
+
+</body>
+</html>
