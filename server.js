@@ -14,14 +14,22 @@ const PORT = process.env.PORT || 80;
 const app = express();
 const fsPromises = fs.promises;
 
-const db = mysql.createPool({
+const dbConfig = {
 	host: process.env.DB_HOST || 'db',
 	user: process.env.DB_USER || 'root',
 	password: process.env.DB_PASSWORD || 'root',
 	database: process.env.DB_NAME || 'pantry_app',
 	port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
 	waitForConnections: true
-})
+};
+
+if (process.env.DB_SSL === 'true') {
+	dbConfig.ssl = process.env.DB_CA
+		? { ca: process.env.DB_CA }
+		: { rejectUnauthorized: false };
+}
+
+const db = mysql.createPool(dbConfig);
 
 /* --------------------
    NEW: server HTML
