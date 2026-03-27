@@ -9,16 +9,17 @@ const mysql = require("mysql2/promise");
 const session = require("express-session");
 
 const HOST = '0.0.0.0';
-const PORT = 80;
+const PORT = process.env.PORT || 80;
 
 const app = express();
 const fsPromises = fs.promises;
 
 const db = mysql.createPool({
-	host: 'db',
-	user: 'root',
-	password: 'root',
-	database: 'pantry_app',
+	host: process.env.DB_HOST || 'db',
+	user: process.env.DB_USER || 'root',
+	password: process.env.DB_PASSWORD || 'root',
+	database: process.env.DB_NAME || 'pantry_app',
+	port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
 	waitForConnections: true
 })
 
@@ -32,11 +33,14 @@ app.use(express.static('recipe-app'))
 app.use(express.json());
 app.use(bodyParser.json());
 //app.use(cors());
+app.set('trust proxy', 1);
+
 app.use(session({
-	secret: "secret-key",
+	secret: process.env.SESSION_SECRET || "secret-key",
 	resave: false,
+	saveUninitialized: false,
 	cookie: {
-		secure: false,
+		secure: process.env.NODE_ENV === "production",
 		httpOnly: true,
 		maxAge: 1000 * 60 * 60 * 24
 	}
