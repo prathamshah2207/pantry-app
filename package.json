@@ -3,8 +3,9 @@
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "mysql2": "^3.20.0",
+    "express-session": "^1.19.0",
     "fs": "^0.0.1-security",
+    "mysql2": "^3.20.0",
     "path": "^0.12.7"
   }
 }
