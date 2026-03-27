@@ -97,13 +97,18 @@ app.get('/api/getmsg', async (req, res) => {
 })
 
 app.post('/api/sendmsg', async (req, res) => {
+<<<<<<< HEAD
 	const { quant, name, cals, defa } = req.body;
+=======
+    const { quant, name, cals, defa, unit } = req.body;
+>>>>>>> robert
 
 	try {
 
 		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
 		const items = JSON.parse(data);
 
+<<<<<<< HEAD
 		const entry = {
 			id: Date.now(),
 			quant,
@@ -111,6 +116,16 @@ app.post('/api/sendmsg', async (req, res) => {
 			cals,
 			defa
 		};
+=======
+        const entry = {
+            id: Date.now(),
+            quant,
+            name,
+            cals,
+            defa,
+            unit
+        };
+>>>>>>> robert
 
 		items.push(entry);
 
@@ -127,18 +142,30 @@ app.post('/api/sendmsg', async (req, res) => {
 
 app.post('/api/editmsg', async (req, res) => {
 
+<<<<<<< HEAD
 	const { id, quant, name, cals, defa } = req.body;
+=======
+    const { id, quant, name, cals, defa, unit } = req.body;
+>>>>>>> robert
 
 	try {
 
 		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
 		const items = JSON.parse(data);
 
+<<<<<<< HEAD
 		const updated = items.map(item =>
 			item.id == id
 				? { id, quant, name, cals, defa }
 				: item
 		);
+=======
+        const updated = items.map(item =>
+            item.id == id
+                ? { id, quant, name, cals, defa, unit }
+                : item
+        );
+>>>>>>> robert
 
 		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
 
