@@ -14,9 +14,6 @@ const PORT = 80;
 const app = express();
 const fsPromises = fs.promises;
 
-const DATA_DIR = path.join(__dirname, 'data');
-const INV_DATA_FILE = path.join(__dirname, 'data', 'inv.json');
-
 const db = mysql.createPool({
 	host: 'db',
 	user: 'root',
@@ -24,10 +21,6 @@ const db = mysql.createPool({
 	database: 'pantry_app',
 	waitForConnections: true
 })
-
-/* ########### NEED DATA FOLDER OR IT WILL CRASH */
-if (!fs.existsSync(DATA_DIR))
-	fs.mkdirSync(DATA_DIR);
 
 /* --------------------
    NEW: server HTML
@@ -83,8 +76,14 @@ app.get('/api/ingredients', async (req, res) => {
 app.get('/api/getmsg', async (req, res) => {
 	try {
 
-		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-		const items = JSON.parse(data);
+		if (!req.session.userId) {
+			return res.status(401).json({ error: 'No active user session' });
+		}
+
+		const [items] = await db.query(
+			'SELECT id, quant, name, cals, defa, unit FROM inventory WHERE user_id = ?',
+			[req.session.userId]
+		);
 
 		res.json(items);
 
@@ -97,26 +96,14 @@ app.get('/api/getmsg', async (req, res) => {
 })
 
 app.post('/api/sendmsg', async (req, res) => {
-<<<<<<< HEAD
-	const { quant, name, cals, defa } = req.body;
-=======
     const { quant, name, cals, defa, unit } = req.body;
->>>>>>> robert
 
 	try {
 
-		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-		const items = JSON.parse(data);
+        if (!req.session.userId) {
+            return res.status(401).send('Write failed');
+        }
 
-<<<<<<< HEAD
-		const entry = {
-			id: Date.now(),
-			quant,
-			name,
-			cals,
-			defa
-		};
-=======
         const entry = {
             id: Date.now(),
             quant,
@@ -125,11 +112,11 @@ app.post('/api/sendmsg', async (req, res) => {
             defa,
             unit
         };
->>>>>>> robert
 
-		items.push(entry);
-
-		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(items, null, 2));
+		await db.query(
+			'INSERT INTO inventory (id, user_id, quant, name, cals, defa, unit) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[entry.id, req.session.userId, entry.quant, entry.name, entry.cals, entry.defa, entry.unit]
+		);
 
 		res.send('Saved');
 
@@ -142,32 +129,18 @@ app.post('/api/sendmsg', async (req, res) => {
 
 app.post('/api/editmsg', async (req, res) => {
 
-<<<<<<< HEAD
-	const { id, quant, name, cals, defa } = req.body;
-=======
     const { id, quant, name, cals, defa, unit } = req.body;
->>>>>>> robert
 
 	try {
 
-		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-		const items = JSON.parse(data);
+        if (!req.session.userId) {
+            return res.status(401).send('Edit failed');
+        }
 
-<<<<<<< HEAD
-		const updated = items.map(item =>
-			item.id == id
-				? { id, quant, name, cals, defa }
-				: item
+		await db.query(
+			'UPDATE inventory SET quant = ?, name = ?, cals = ?, defa = ?, unit = ? WHERE id = ? AND user_id = ?',
+			[quant, name, cals, defa, unit, id, req.session.userId]
 		);
-=======
-        const updated = items.map(item =>
-            item.id == id
-                ? { id, quant, name, cals, defa, unit }
-                : item
-        );
->>>>>>> robert
-
-		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
 
 		res.send('Edited');
 
@@ -184,17 +157,14 @@ app.post('/api/resetmsg', async (req, res) => {
 
 	try {
 
-		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-		const items = JSON.parse(data);
+		if (!req.session.userId) {
+			return res.status(401).send('Reset failed');
+		}
 
-		const updated = items.map(item => {
-			if (item.id == id) {
-				item.quant = item.defa;
-			}
-			return item;
-		});
-
-		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(updated, null, 2));
+		await db.query(
+			'UPDATE inventory SET quant = defa WHERE id = ? AND user_id = ?',
+			[id, req.session.userId]
+		);
 
 		res.send('Reset');
 
@@ -212,12 +182,14 @@ app.post('/api/deletemsg', async (req, res) => {
 
 	try {
 
-		const data = await fsPromises.readFile(INV_DATA_FILE, 'utf8');
-		const items = JSON.parse(data);
+		if (!req.session.userId) {
+			return res.status(401).send('Delete failed');
+		}
 
-		const filtered = items.filter(item => item.id != id);
-
-		await fsPromises.writeFile(INV_DATA_FILE, JSON.stringify(filtered, null, 2));
+		await db.query(
+			'DELETE FROM inventory WHERE id = ? AND user_id = ?',
+			[id, req.session.userId]
+		);
 
 		res.send('Deleted');
 
@@ -230,7 +202,7 @@ app.post('/api/deletemsg', async (req, res) => {
 });
 
 app.get('/gp', (req,res) => {
-	res.json(INV_DATA_FILE);
+	res.json('inventory table in MySQL');
 });
 
 /*#########			END OF INVENTORY API		############*/
@@ -296,9 +268,6 @@ app.post("/signup", async (req, res) => {
 
 		const newUserId = result.insertId;
 		req.session.userId = newUserId;
-		if (!fs.existsSync(INV_DATA_FILE))
-			fs.writeFileSync(INV_DATA_FILE, JSON.stringify([], null, 2));
-
 		res.status(201).json({
 			message: "Profile created successfully",
 			userId: newUserId
