@@ -5,53 +5,66 @@
 	<link rel="stylesheet" href="userpage.css">
 </head>
 <body>
-	<div class="container">
-		<h1><center><b>Create Profile</b></center></h1>
+	<div class="page-shell">
+		<div class="auth-shell">
+			<div class="auth-content">
+				<div class="top-tag">Pantry • Recipes • Nutrition</div>
 
-		<form id="signupForm">
-			<p>
-				<label>Display Name:</label>
-				<input type="text" id="name" required>
-			</p>
+				<h1 class="page-title">Create Profile</h1>
+				<p class="page-subtext">
+					Set up your account and basic food preferences in one place.
+				</p>
 
-			<p>
-				<label>Username:</label>
-				<input type="text" id="username" required>
-			</p>
+				<form id="signupForm" class="form-grid">
+					<div class="field-group">
+						<label for="name" class="field-label">Display Name</label>
+						<input type="text" id="name" required>
+					</div>
 
-			<p>
-				<label>Email:</label>
-				<input type="email" id="email">
-			</p>
+					<div class="field-group">
+						<label for="username" class="field-label">Username</label>
+						<input type="text" id="username" required>
+					</div>
 
-			<p>
-				<label>Password:</label>
-				<input type="password" id="password" required>
-			</p>
+					<div class="field-group">
+						<label for="email" class="field-label">Email</label>
+						<input type="email" id="email">
+					</div>
 
-			<p>
-				<label>Diet Preference:</label>
-				<select id="dietPreference">
-					<option value="none">None</option>
-					<option value="vegetarian">Vegetarian</option>
-					<option value="vegan">Vegan</option>
-					<option value="halal">Halal</option>
-					<option value="gluten-free">Gluten-Free</option>
-				</select>
-			</p>
+					<div class="field-group">
+						<label for="password" class="field-label">Password</label>
+						<input type="password" id="password" required>
+					</div>
 
-			<p>
-				<label>Allow Substitutions:</label>
-				<input type="checkbox" id="allowSubstitutions" checked>
-			</p>
+					<div class="field-group">
+						<label for="dietPreference" class="field-label">Diet Preference</label>
+						<select id="dietPreference">
+							<option value="none">None</option>
+							<option value="vegetarian">Vegetarian</option>
+							<option value="vegan">Vegan</option>
+							<option value="halal">Halal</option>
+							<option value="gluten-free">Gluten-Free</option>
+						</select>
+					</div>
 
-			<p>
-				<button type="submit">Create Profile</button>
-			</p>
-		</form>
-		<p>Already have an account? <a href="login.html">Login</a></p>
+					<label class="checkbox-row">
+						<input type="checkbox" id="allowSubstitutions" checked>
+						<span>Allow ingredient substitutions</span>
+					</label>
+
+					<div class="form-actions">
+						<button type="submit">Create Profile</button>
+					</div>
+				</form>
+
+				<p class="auth-switch">
+					Already have an account? <a href="login.html">Login</a>
+				</p>
+
+				<p id="message"></p>
+			</div>
+		</div>
 	</div>
-	<p id="message"></p>
 
 	<script>
 		async function checkUser() {

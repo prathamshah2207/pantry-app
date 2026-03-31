@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Saved Recipes</title>
+	<link rel="stylesheet" href="recipepage.css">
+</head>
+<body>
+	<div class="page-shell">
+		<div class="app-shell">
+			<header class="top-nav">
+				<div class="brand">
+					<h1 class="brand-title">Pantry &amp; Recipe App</h1>
+					<div class="brand-subtitle">Recipes • Saved • Filters</div>
+				</div>
+
+				<nav class="nav-links">
+					<button type="button" class="nav-btn" onclick="window.location.href='recipe_page.html'">Build Recipe</button>
+					<button type="button" class="nav-btn" onclick="window.location.href='/'">Home</button>
+				</nav>
+			</header>
+
+			<main class="content">
+				<section class="hero">
+					<h1>Saved Recipes</h1>
+					<p>
+						Search recipes, filter them, and see what your pantry can actually make right now
+					</p>
+				</section>
+
+				<section class="panel">
+					<h2 class="section-title">Filter Recipes</h2>
+					<p class="section-subtext">
+						Search by name, ingredient, diet tag, calories, or only show recipes your pantry can make
+					</p>
+
+					<form id="filterForm" class="form-grid">
+						<div class="field-group">
+							<label for="searchInput" class="field-label">Recipe Name</label>
+							<input type="text" id="searchInput" placeholder="Search recipe name">
+						</div>
+
+						<div class="field-group">
+							<label for="ingredientInput" class="field-label">Ingredient</label>
+							<input type="text" id="ingredientInput" placeholder="Search by ingredient">
+						</div>
+
+						<div class="field-group">
+							<label for="dietTagFilter" class="field-label">Diet Tag</label>
+							<select id="dietTagFilter">
+								<option value="">All</option>
+								<option value="vegetarian">Vegetarian</option>
+								<option value="vegan">Vegan</option>
+								<option value="halal">Halal</option>
+								<option value="gluten-free">Gluten-Free</option>
+							</select>
+						</div>
+
+						<div class="field-group">
+							<label for="maxCaloriesInput" class="field-label">Max Calories</label>
+							<input type="number" id="maxCaloriesInput" min="0" placeholder="e.g. 500">
+						</div>
+
+						<label class="checkbox-row">
+							<input type="checkbox" id="availableOnlyInput">
+							<span>Only show recipes I can make from pantry</span>
+						</label>
+
+						<div class="action-row">
+							<button type="submit">Apply Filters</button>
+							<button type="button" id="clearFiltersButton">Clear Filters</button>
+						</div>
+					</form>
+				</section>
+
+				<section class="panel">
+					<h2 class="section-title">Recipe List</h2>
+					<p class="section-subtext">
+						Filtered results will show here
+					</p>
+
+					<div class="note" id="filterNote" hidden></div>
+
+					<div id="recipes" class="recipe-list"></div>
+
+					<p class="message" id="message"></p>
+				</section>
+			</main>
+		</div>
+	</div>
+
+	<script>
+		let currentUser = null;
+
+		async function checkUser() {
+			try {
+				const resp = await fetch("/user");
+				const data = await resp.json();
+
+				if (!data.exists) {
+					window.location.replace("/login.html");
+					return false;
+				}
+
+				currentUser = data.user;
+				return true;
+			}
+			catch (err) {
+				console.error("Error checking user:", err);
+				return false;
+			}
+		}
+
+		function buildQueryString() {
+			const search = document.getElementById("searchInput").value.trim();
+			const ingredient = document.getElementById("ingredientInput").value.trim();
+			const dietTag = document.getElementById("dietTagFilter").value;
+			const maxCalories = document.getElementById("maxCaloriesInput").value.trim();
+			const availableOnly = document.getElementById("availableOnlyInput").checked;
+
+			const params = new URLSearchParams();
+
+			if (search)
+				params.set("search", search);
+
+			if (ingredient)
+				params.set("ingredient", ingredient);
+
+			if (dietTag)
+				params.set("dietTag", dietTag);
+
+			if (maxCalories)
+				params.set("maxCalories", maxCalories);
+
+			if (availableOnly)
+				params.set("availableOnly", "true");
+
+			return params.toString();
+		}
+
+		function updateFilterNote() {
+			const note = document.getElementById("filterNote");
+			const parts = [];
+
+			const search = document.getElementById("searchInput").value.trim();
+			const ingredient = document.getElementById("ingredientInput").value.trim();
+			const dietTag = document.getElementById("dietTagFilter").value;
+			const maxCalories = document.getElementById("maxCaloriesInput").value.trim();
+			const availableOnly = document.getElementById("availableOnlyInput").checked;
+
+			if (search)
+				parts.push("name: " + search);
+
+			if (ingredient)
+				parts.push("ingredient: " + ingredient);
+
+			if (dietTag)
+				parts.push("diet: " + dietTag);
+
+			if (maxCalories)
+				parts.push("max calories: " + maxCalories);
+
+			if (availableOnly)
+				parts.push("pantry only");
+
+			if (parts.length === 0) {
+				note.hidden = true;
+				note.textContent = "";
+				return;
+			}
+
+			note.hidden = false;
+			note.textContent = "Active filters — " + parts.join(" • ");
+		}
+
+		function renderRecipes(recipes) {
+			const container = document.getElementById("recipes");
+			container.innerHTML = "";
+
+			if (recipes.length === 0) {
+				container.innerHTML = '<p class="empty-state">No recipes matched your filters.</p>';
+				return;
+			}
+
+			recipes.forEach(r => {
+				const div = document.createElement("div");
+				div.className = "recipe";
+
+				const missingHtml = r.canMake
+					? `<p class="recipe-status recipe-status-ok">Can make from pantry</p>`
+					: `
+						<p class="recipe-status recipe-status-miss">Missing ingredients</p>
+						<ul class="missing-list">
+							${(r.missingIngredients || []).map(i =>
+								`<li>${i.name} — need ${i.need}${i.unit || ""}, have ${i.have}${i.unit || ""}</li>`
+							).join("")}
+						</ul>
+					`;
+
+				div.innerHTML = `
+					<h3>${r.name}</h3>
+					<p><strong>Total Calories:</strong> ${Number(r.calories).toFixed(2)}</p>
+					<p><strong>Diet Tag:</strong> ${r.dietTag || "None"}</p>
+					${missingHtml}
+					<ul>
+						${r.ingredients.map(i => `<li>${i.name} - ${i.quantity}${i.unit || "g"}</li>`).join("")}
+					</ul>
+					<button class="delete-btn" onclick="deleteRecipe(${r.id})">Delete Recipe</button>
+				`;
+
+				container.appendChild(div);
+			});
+		}
+
+		async function loadRecipes() {
+			try {
+				updateFilterNote();
+
+				const queryString = buildQueryString();
+				const url = queryString ? "/api/recipes?" + queryString : "/api/recipes";
+
+				const response = await fetch(url);
+				const data = await response.json();
+
+				if (!response.ok) {
+					document.getElementById("message").textContent = data.message || "Could not load recipes.";
+					renderRecipes([]);
+					return;
+				}
+
+				document.getElementById("message").textContent = "";
+				renderRecipes(Array.isArray(data) ? data : []);
+			}
+			catch (err) {
+				console.error("Error loading recipes:", err);
+				document.getElementById("message").textContent = "Could not load recipes.";
+				renderRecipes([]);
+			}
+		}
+
+		async function deleteRecipe(id) {
+			const confirmed = confirm("Delete this recipe?");
+			if (!confirmed)
+				return;
+
+			try {
+				const response = await fetch("/api/recipes/" + id, {
+					method: "DELETE"
+				});
+
+				const data = await response.json();
+
+				if (response.ok) {
+					document.getElementById("message").textContent = data.message;
+					await loadRecipes();
+				}
+				else {
+					document.getElementById("message").textContent = data.message || "Could not delete recipe.";
+				}
+			}
+			catch (err) {
+				console.error("Error deleting recipe:", err);
+				document.getElementById("message").textContent = "Could not delete recipe.";
+			}
+		}
+
+		function clearFilters() {
+			document.getElementById("searchInput").value = "";
+			document.getElementById("ingredientInput").value = "";
+			document.getElementById("dietTagFilter").value = "";
+			document.getElementById("maxCaloriesInput").value = "";
+			document.getElementById("availableOnlyInput").checked = false;
+			loadRecipes();
+		}
+
+		async function initPage() {
+			const okay = await checkUser();
+			if (!okay)
+				return;
+
+			if (currentUser && currentUser.dietPreference && currentUser.dietPreference !== "none") {
+				document.getElementById("dietTagFilter").value = currentUser.dietPreference;
+			}
+
+			document.getElementById("filterForm").addEventListener("submit", function(event) {
+				event.preventDefault();
+				loadRecipes();
+			});
+
+			document.getElementById("clearFiltersButton").addEventListener("click", clearFilters);
+
+			await loadRecipes();
+		}
+
+		initPage();
+	</script>
+</body>
+</html>
