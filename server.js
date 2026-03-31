@@ -361,120 +361,85 @@ app.put("/user", async (req, res) => {
  * ***************************************************************
  */
 
-/* ==============================
-   CREATE RECIPE
-============================== */
+app.get("/api/recipes", async (req, res) => {
+	try {
+		if (!req.session.userId)
+			return res.status(401).json({ message: "No active user session found" });
 
-app.post("/recipes", async (req, res) => {
+		const [rows] = await db.query(
+			"SELECT id, name, calories, diet_tag, ingredients_json FROM recipes WHERE user_id = ? ORDER BY id DESC",
+			[req.session.userId]
+		);
 
-    try {
+		const recipes = rows.map((recipe) => ({
+			id: recipe.id,
+			name: recipe.name,
+			calories: Number(recipe.calories),
+			dietTag: recipe.diet_tag || "",
+			ingredients: JSON.parse(recipe.ingredients_json || "[]")
+		}));
 
-        const { title, description } = req.body;
-
-        const [result] = await db.query(
-            "INSERT INTO recipes (title, description) VALUES (?, ?)",
-            [title, description]
-        );
-
-        res.json({
-            message: "Recipe created",
-            recipeId: result.insertId
-        });
-
-    } catch (error) {
-
-        console.error(error);
-        res.status(500).json({ error: "Server error" });
-
-    }
-
+		res.json(recipes);
+	}
+	catch (error) {
+		console.error(error);
+		res.status(500).json({ message: "Error loading recipes" });
+	}
 });
 
-/* ==============================
-   ADD INGREDIENT TO RECIPE
-============================== */
+app.post("/api/recipes", async (req, res) => {
+	try {
+		if (!req.session.userId)
+			return res.status(401).json({ message: "No active user session found" });
 
-app.post("/recipes/:id/ingredients", async (req, res) => {
+		const { name, ingredients, calories, dietTag } = req.body;
 
-    try {
+		if (!name || !Array.isArray(ingredients) || ingredients.length === 0) {
+			return res.status(400).json({ message: "Recipe name and ingredients are required" });
+		}
 
-        const recipeId = req.params.id;
-        const { ingredientId, quantity } = req.body;
+		const parsedCalories = Number(calories) || 0;
 
-        await db.query(
-            "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)",
-            [recipeId, ingredientId, quantity]
-        );
+		const [result] = await db.query(
+			"INSERT INTO recipes (user_id, name, calories, diet_tag, ingredients_json) VALUES (?, ?, ?, ?, ?)",
+			[
+				req.session.userId,
+				name,
+				parsedCalories,
+				dietTag || null,
+				JSON.stringify(ingredients)
+			]
+		);
 
-        res.json({
-            message: "Ingredient added"
-        });
-
-    } catch (error) {
-
-        console.error(error);
-        res.status(500).json({ error: "Server error" });
-
-    }
-
+		res.status(201).json({
+			message: "Recipe saved successfully",
+			recipeId: result.insertId
+		});
+	}
+	catch (error) {
+		console.error(error);
+		res.status(500).json({ message: "Error saving recipe" });
+	}
 });
 
-/* ==============================
-   GET RECIPE INGREDIENTS
-============================== */
+app.delete("/api/recipes/:id", async (req, res) => {
+	try {
+		if (!req.session.userId)
+			return res.status(401).json({ message: "No active user session found" });
 
-app.get("/recipes/:id/ingredients", async (req, res) => {
+		const recipeId = req.params.id;
 
-    try {
+		await db.query(
+			"DELETE FROM recipes WHERE id = ? AND user_id = ?",
+			[recipeId, req.session.userId]
+		);
 
-        const recipeId = req.params.id;
-
-        const [rows] = await db.query(`
-            SELECT i.name, ri.quantity
-            FROM recipe_ingredients ri
-            JOIN ingredients i
-            ON ri.ingredient_id = i.ingredient_id
-            WHERE ri.recipe_id = ?
-        `, [recipeId]);
-
-        res.json(rows);
-
-    } catch (error) {
-
-        console.error(error);
-        res.status(500).json({ error: "Server error" });
-
-    }
-
-});
-
-/* ==============================
-   CALCULATE CALORIES
-============================== */
-
-app.get("/recipes/:id/calories", async (req, res) => {
-
-    try {
-
-        const recipeId = req.params.id;
-
-        const [rows] = await db.query(`
-            SELECT SUM(i.calories_per_unit * ri.quantity) AS totalCalories
-            FROM recipe_ingredients ri
-            JOIN ingredients i
-            ON ri.ingredient_id = i.ingredient_id
-            WHERE ri.recipe_id = ?
-        `, [recipeId]);
-
-        res.json(rows[0]);
-
-    } catch (error) {
-
-        console.error(error);
-        res.status(500).json({ error: "Server error" });
-
-    }
-
+		res.json({ message: "Recipe deleted successfully" });
+	}
+	catch (error) {
+		console.error(error);
+		res.status(500).json({ message: "Error deleting recipe" });
+	}
 });
 
 /*#########			END OF RECIPE API		############*/
