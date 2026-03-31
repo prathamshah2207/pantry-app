@@ -20,15 +20,15 @@ const db = mysql.createPool({
 	password: 'root',
 	database: 'pantry_app',
 	waitForConnections: true
-})
+});
 
 /* --------------------
    NEW: server HTML
 --------------------- */
 app.use(express.static('inventory'));
-app.use(express.static('user'))
-app.use(express.static('public'))
-app.use(express.static('recipe-app'))
+app.use(express.static('user'));
+app.use(express.static('public'));
+app.use(express.static('recipe-app'));
 app.use(express.json());
 app.use(bodyParser.json());
 //app.use(cors());
@@ -42,17 +42,124 @@ app.use(session({
 	}
 }));
 
+/* recipe related functions */
+
+// get current logged in user for recipe filtering
+async function getCurrentUser(req) {
+	if (!req.session.userId)
+		return null;
+
+	const [rows] = await db.query(
+		`SELECT id, name, username, email, diet_preference, allow_substitutions
+		FROM users
+		WHERE id = ?`,
+		[req.session.userId]
+	);
+
+	return rows[0] || null;
+}
+
+// load only this user's saved recipes
+async function getAllRecipes(userId) {
+	const [rows] = await db.query(
+		`SELECT id, user_id, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients
+		FROM recipes
+		WHERE user_id = ?
+		ORDER BY id DESC`,
+		[userId]
+	);
+
+	return rows;
+}
+
+// load pantry items so recipe availability can be checked
+async function getInventoryForUser(userId) {
+	const [rows] = await db.query(
+		`SELECT name, quant
+		FROM inventory
+		WHERE user_id = ?`,
+		[userId]
+	);
+
+	return rows;
+}
+
+function normalizeRecipe(recipe) {
+	let parsedIngredients = recipe.ingredients;
+
+	if (typeof parsedIngredients === "string") {
+		try {
+			parsedIngredients = JSON.parse(parsedIngredients);
+		}
+		catch {
+			parsedIngredients = [];
+		}
+	}
+
+	if (!Array.isArray(parsedIngredients))
+		parsedIngredients = [];
+
+	return {
+		...recipe,
+		calories: Number(recipe.calories) || 0,
+		dietTag: recipe.dietTag || "None",
+		ingredients: parsedIngredients
+	};
+}
+
+function buildInventoryMap(items) {
+	const inventoryMap = new Map();
+
+	items.forEach(item => {
+		const key = String(item.name || "").trim().toLowerCase();
+		const quant = Number(item.quant) || 0;
+
+		if (key) {
+			inventoryMap.set(key, quant);
+		}
+	});
+
+	return inventoryMap;
+}
+
+function attachPantryMatch(recipe, inventoryMap) {
+	const missingIngredients = recipe.ingredients
+		.map(ingredient => {
+			const key = String(ingredient.name || "").trim().toLowerCase();
+			const need = Number(ingredient.quantity) || 0;
+			const have = inventoryMap.get(key) || 0;
+
+			if (have >= need) {
+				return null;
+			}
+
+			return {
+				name: ingredient.name,
+				need,
+				have,
+				unit: ingredient.unit || ""
+			};
+		})
+		.filter(Boolean);
+
+	return {
+		...recipe,
+		canMake: missingIngredients.length === 0,
+		missingIngredients
+	};
+}
+
 //tells Express to serve static files (HTML, CSS, images, client-side JS)
 // from a folder called public.
 /*****
- * 
+ *
  * This HTML page lives on the server.
    Clicking a link sends a request.”
    The server runs JavaScript and sends a response.
  */
 
-app.get('/', (req,res) => {
-	res.sendFile("public/index.html", {root: __dirname});
+app.get('/', (req, res) => {
+	res.sendFile("public/index.html", { root: __dirname });
 });
 
 
@@ -65,12 +172,13 @@ app.get('/', (req,res) => {
 const INGRED_FILE = path.join(__dirname, 'inventory', 'data', 'ingred.json');
 
 app.get('/api/ingredients', async (req, res) => {
-    try {
-        const data = await fsPromises.readFile(INGRED_FILE, 'utf8');
-        res.json(JSON.parse(data));
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to load ingredients' });
-    }
+	try {
+		const data = await fsPromises.readFile(INGRED_FILE, 'utf8');
+		res.json(JSON.parse(data));
+	}
+	catch (err) {
+		res.status(500).json({ error: 'Failed to load ingredients' });
+	}
 });
 
 app.get('/api/getmsg', async (req, res) => {
@@ -87,31 +195,32 @@ app.get('/api/getmsg', async (req, res) => {
 
 		res.json(items);
 
-	} catch (err) {
+	}
+	catch (err) {
 
 		console.error(err);
 		res.status(500).json({ error: 'Failed to read messages' });
 
 	}
-})
+});
 
 app.post('/api/sendmsg', async (req, res) => {
-    const { quant, name, cals, defa, unit } = req.body;
+	const { quant, name, cals, defa, unit } = req.body;
 
 	try {
 
-        if (!req.session.userId) {
-            return res.status(401).send('Write failed');
-        }
+		if (!req.session.userId) {
+			return res.status(401).send('Write failed');
+		}
 
-        const entry = {
-            id: Date.now(),
-            quant,
-            name,
-            cals,
-            defa,
-            unit
-        };
+		const entry = {
+			id: Date.now(),
+			quant,
+			name,
+			cals,
+			defa,
+			unit
+		};
 
 		await db.query(
 			'INSERT INTO inventory (id, user_id, quant, name, cals, defa, unit) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -120,7 +229,8 @@ app.post('/api/sendmsg', async (req, res) => {
 
 		res.send('Saved');
 
-	} catch (err) {
+	}
+	catch (err) {
 
 		res.status(500).send('Write failed');
 
@@ -129,13 +239,13 @@ app.post('/api/sendmsg', async (req, res) => {
 
 app.post('/api/editmsg', async (req, res) => {
 
-    const { id, quant, name, cals, defa, unit } = req.body;
+	const { id, quant, name, cals, defa, unit } = req.body;
 
 	try {
 
-        if (!req.session.userId) {
-            return res.status(401).send('Edit failed');
-        }
+		if (!req.session.userId) {
+			return res.status(401).send('Edit failed');
+		}
 
 		await db.query(
 			'UPDATE inventory SET quant = ?, name = ?, cals = ?, defa = ?, unit = ? WHERE id = ? AND user_id = ?',
@@ -144,7 +254,8 @@ app.post('/api/editmsg', async (req, res) => {
 
 		res.send('Edited');
 
-	} catch (err) {
+	}
+	catch (err) {
 
 		res.status(500).send('Edit failed');
 
@@ -168,7 +279,8 @@ app.post('/api/resetmsg', async (req, res) => {
 
 		res.send('Reset');
 
-	} catch (err) {
+	}
+	catch (err) {
 
 		res.status(500).send('Reset failed');
 
@@ -193,7 +305,8 @@ app.post('/api/deletemsg', async (req, res) => {
 
 		res.send('Deleted');
 
-	} catch (err) {
+	}
+	catch (err) {
 
 		res.status(500).send('Delete failed');
 
@@ -201,7 +314,7 @@ app.post('/api/deletemsg', async (req, res) => {
 
 });
 
-app.get('/gp', (req,res) => {
+app.get('/gp', (req, res) => {
 	res.json('inventory table in MySQL');
 });
 
@@ -217,12 +330,12 @@ app.get('/gp', (req,res) => {
 app.get("/user", async (req, res) => {
 	try {
 		if (!req.session.userId)
-			return res.json({exists: false, user: null});
+			return res.json({ exists: false, user: null });
 
 		const [rows] = await db.query(`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`, [req.session.userId]);
 
 		if (rows.length === 0)
-			return res.json({exists: false, user: null});
+			return res.json({ exists: false, user: null });
 		const user = rows[0];
 
 		res.json({
@@ -239,21 +352,21 @@ app.get("/user", async (req, res) => {
 	}
 	catch (error) {
 		console.error(error);
-		res.status(500).json({message: "Error reading user data"});
+		res.status(500).json({ message: "Error reading user data" });
 	}
 });
 
 app.post("/signup", async (req, res) => {
 	try {
-		const {name, username, email, password, dietPreference, allowSubstitutions} = req.body;
+		const { name, username, email, password, dietPreference, allowSubstitutions } = req.body;
 
 		if (!name || !username || !password)
-			return res.status(400).json({message: "Name, username, and password are required"});
+			return res.status(400).json({ message: "Name, username, and password are required" });
 
 		const [existingUsers] = await db.query("SELECT id FROM users WHERE username = ?", [username]);
 
 		if (existingUsers.length > 0)
-			return res.status(409).json({message: "Username already exists"});
+			return res.status(409).json({ message: "Username already exists" });
 
 		const [result] = await db.query(`INSERT INTO users (name, username, email, password, diet_preference, allow_substitutions) VALUES (?, ?, ?, ?, ?, ?)`,
 			[
@@ -275,26 +388,26 @@ app.post("/signup", async (req, res) => {
 	}
 	catch (error) {
 		console.error(error);
-		res.status(500).json({message: "Error creating profile"});
+		res.status(500).json({ message: "Error creating profile" });
 	}
 });
 
 app.post("/login", async (req, res) => {
 	try {
-		const {username, password} = req.body;
+		const { username, password } = req.body;
 		if (!username || !password)
-			return res.status(400).json({message: "Username and password are required"});
+			return res.status(400).json({ message: "Username and password are required" });
 		const [rows] = await db.query(`SELECT id, name, username, email, password, diet_preference, allow_substitutions FROM users WHERE username = ?`, [username]);
 
 		if (rows.length === 0 || rows[0].password !== password)
-			return res.status(401).json({message: "Invalid username or password"});
+			return res.status(401).json({ message: "Invalid username or password" });
 		const user = rows[0];
 		req.session.userId = user.id;
-		res.json({message: "Login successful"});
+		res.json({ message: "Login successful" });
 	}
 	catch (error) {
 		console.error(error);
-		res.status(500).json({message: "Error logging in"});
+		res.status(500).json({ message: "Error logging in" });
 	}
 });
 
@@ -302,23 +415,23 @@ app.post("/logout", (req, res) => {
 	req.session.destroy((err) => {
 		if (err) {
 			console.error(err);
-			return res.status(500).json({message: "Error logging out"});
+			return res.status(500).json({ message: "Error logging out" });
 		}
 		res.clearCookie("connect.sid");
-		res.json({message: "Logged out successfully"});
+		res.json({ message: "Logged out successfully" });
 	});
 });
 
 app.put("/user", async (req, res) => {
 	try {
 		if (!req.session.userId)
-			return res.status(401).json({message: "No active user session found"});
+			return res.status(401).json({ message: "No active user session found" });
 		const { name, email, dietPreference } = req.body;
 
 		const [rows] = await db.query(`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`, [req.session.userId]);
 
 		if (rows.length === 0)
-			return res.status(404).json({message: "User not found"});
+			return res.status(404).json({ message: "User not found" });
 
 		const existingUser = rows[0];
 		const updatedName = name ?? existingUser.name;
@@ -326,12 +439,13 @@ app.put("/user", async (req, res) => {
 		const updatedDietPreference = dietPreference ?? existingUser.diet_preference;
 
 		await db.query(`UPDATE users SET name = ?, email = ?, diet_preference = ? WHERE id = ?`, [updatedName, updatedEmail, updatedDietPreference, req.session.userId]);
-		
+
 		const [updatedRows] = await db.query(
 			`SELECT id, name, username, email, diet_preference, allow_substitutions
 			FROM users
 			WHERE id = ?`,
-			[req.session.userId]);
+			[req.session.userId]
+		);
 		const user = updatedRows[0];
 
 		res.json({
@@ -348,7 +462,7 @@ app.put("/user", async (req, res) => {
 	}
 	catch (error) {
 		console.error(error);
-		res.status(500).json({message: "Error updating user profile"});
+		res.status(500).json({ message: "Error updating user profile" });
 	}
 });
 
@@ -363,27 +477,65 @@ app.put("/user", async (req, res) => {
 
 app.get("/api/recipes", async (req, res) => {
 	try {
-		if (!req.session.userId)
-			return res.status(401).json({ message: "No active user session found" });
+		const {
+			search = "",
+			dietTag = "",
+			ingredient = "",
+			maxCalories = "",
+			availableOnly = "false"
+		} = req.query;
 
-		const [rows] = await db.query(
-			"SELECT id, name, calories, diet_tag, ingredients_json FROM recipes WHERE user_id = ? ORDER BY id DESC",
-			[req.session.userId]
-		);
+		const user = await getCurrentUser(req);
+		if (!user)
+			return res.status(401).json({ message: "Not logged in." });
 
-		const recipes = rows.map((recipe) => ({
-			id: recipe.id,
-			name: recipe.name,
-			calories: Number(recipe.calories),
-			dietTag: recipe.diet_tag || "",
-			ingredients: JSON.parse(recipe.ingredients_json || "[]")
-		}));
+		const rawRecipes = await getAllRecipes(user.id);
+		let recipes = rawRecipes.map(normalizeRecipe);
+
+		const rawInventory = await getInventoryForUser(user.id);
+		const inventoryMap = buildInventoryMap(rawInventory);
+
+		const cleanSearch = search.trim().toLowerCase();
+		const cleanDietTag = dietTag.trim().toLowerCase();
+		const cleanIngredient = ingredient.trim().toLowerCase();
+		const calorieLimit = Number(maxCalories);
+
+		// filter by recipe name
+		if (cleanSearch)
+			recipes = recipes.filter(recipe =>
+				String(recipe.name || "").toLowerCase().includes(cleanSearch)
+			);
+
+		// filter by diet tag
+		if (cleanDietTag && cleanDietTag !== "none")
+			recipes = recipes.filter(recipe =>
+				String(recipe.dietTag || "").toLowerCase() === cleanDietTag
+			);
+
+		// filter by ingredient name
+		if (cleanIngredient)
+			recipes = recipes.filter(recipe =>
+				recipe.ingredients.some(item =>
+					String(item.name || "").toLowerCase().includes(cleanIngredient)
+				)
+			);
+
+		// filter by max calories
+		if (!Number.isNaN(calorieLimit) && maxCalories !== "")
+			recipes = recipes.filter(recipe => recipe.calories <= calorieLimit);
+
+		// attach pantry match info for each recipe
+		recipes = recipes.map(recipe => attachPantryMatch(recipe, inventoryMap));
+
+		// return only recipes the pantry can fully make
+		if (availableOnly === "true")
+			recipes = recipes.filter(recipe => recipe.canMake);
 
 		res.json(recipes);
 	}
-	catch (error) {
-		console.error(error);
-		res.status(500).json({ message: "Error loading recipes" });
+	catch (err) {
+		console.error("Error filtering recipes:", err);
+		res.status(500).json({ message: "Could not load filtered recipes." });
 	}
 });
 

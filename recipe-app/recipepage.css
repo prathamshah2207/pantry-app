@@ -297,3 +297,42 @@ select:focus {
 		padding: 24px 18px 22px;
 	}
 }
+.checkbox-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 4px 0;
+	color: #dce6f0;
+}
+
+.checkbox-row input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	accent-color: #6f95c0;
+}
+.recipe-status {
+	margin: 0 0 12px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.recipe-status-ok {
+	background: rgba(70, 120, 180, 0.18);
+	border: 1px solid rgba(120, 170, 230, 0.22);
+	color: #d8e9ff;
+}
+
+.recipe-status-miss {
+	background: rgba(80, 52, 65, 0.22);
+	border: 1px solid rgba(190, 120, 145, 0.20);
+	color: #ffdbe6;
+}
+
+.missing-list {
+	margin: 0 0 14px;
+	padding-left: 20px;
+	color: #d8e4f0;
+}
