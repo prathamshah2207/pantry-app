@@ -4,67 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Inventory</title>
+    <link rel="stylesheet" href="inventorypage.css">
 </head>
-<style>
-    table {
-        overflow-y: scroll;
-        height: 400px;
-        display: block;
-        margin: 0px auto;
-    }
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20;
-        padding: 0;
-        background-color: #f4f4f4;
-        color: #222;
-        text-align: left;
-    }
-    button {
-        padding: 5px 5px;
-        margin: 0px;
-        border: 1px solid #999;
-        border-radius: 5px;
-        background-color: #eee;
-        cursor: pointer;
-        font-size: 15px;
-    }
-
-    button:hover {
-        background-color: #ddd;
-    }
-</style>
-
 <body>
+	<div class="page-shell">
+		<div class="app-shell">
+			<header class="top-nav">
+				<div class="brand">
+					<h1 class="brand-title">Pantry &amp; Recipe App</h1>
+					<div class="brand-subtitle">Inventory • Stock • Nutrition</div>
+				</div>
 
-    <button id="back">Back</button>
+				<nav class="nav-links">
+					<button type="button" id="back" class="nav-btn">Home</button>
+					<button type="button" class="nav-btn" onclick="makepopup()">Add Item</button>
+				</nav>
+			</header>
 
-    <h1 style="text-align: center;">Inventory</h1>
+			<main class="content">
+				<section class="hero">
+					<h1>Inventory</h1>
+					<p>
+						Track pantry quantities, reset stock levels, and update ingredients
+					</p>
+				</section>
 
-    <br>
-    <button onclick="makepopup()">Add item</button>
-    <br>
-    <div>
-        <table id="table">
-            <tr>
-                <th>Amount</th>
-                <th>/Total</th>
-                <th>Ingredient</th>
-                <th>Calories</th>
-                <th>Edit</th>
-                <th>Reset</th>
-                <th>Delete</th>
-            </tr>
-        </table>
-    </div>
-    <div id="popup">
-        <!-- <input id="quant" placeholder="item quantity">
-        <input id="name" placeholder="item name">
-        <input id="cals" placeholder="item calories">
-        <input id="defa" placeholder="default restock number">
-        <button onclick="sendAsync()">Submit</button> -->
-    </div>
+				<section class="table-card">
+					<h2 class="section-title">Pantry Items</h2>
+					<p class="section-subtext">
+						Current ingredient amounts, calories, and quick actions
+					</p>
 
+					<div class="table-wrap">
+						<table id="table">
+							<tr>
+								<th>Amount</th>
+								<th>Ingredient</th>
+								<th>Calories</th>
+								<th>Edit</th>
+								<th>Reset</th>
+								<th>Delete</th>
+							</tr>
+						</table>
+					</div>
+				</section>
+			</main>
+		</div>
+	</div>
+
+	<div id="popup"></div>
 <script>
 
 let items = [];

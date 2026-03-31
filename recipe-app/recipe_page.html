@@ -2,141 +2,84 @@
 <html>
 <head>
 <title>Recipe Tracker</title>
-
-<style>
-body {
-	font-family: 'Segoe UI', sans-serif;
-	background: linear-gradient(to right, #667eea, #764ba2);
-	margin: 0;
-}
-
-.container {
-	width: 420px;
-	margin: 60px auto;
-	background: white;
-	padding: 30px;
-	border-radius: 12px;
-	box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
-
-h2 {
-	text-align: center;
-	margin-bottom: 20px;
-}
-
-input, select {
-	width: 100%;
-	padding: 12px;
-	margin-top: 10px;
-	border-radius: 8px;
-	border: 1px solid #ddd;
-	font-size: 14px;
-	box-sizing: border-box;
-}
-
-button {
-	width: 100%;
-	padding: 12px;
-	margin-top: 12px;
-	background: #667eea;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	cursor: pointer;
-	font-weight: bold;
-	transition: 0.2s;
-}
-
-button:hover {
-	background: #5a67d8;
-}
-
-ul {
-	margin-top: 10px;
-	padding-left: 20px;
-}
-
-li {
-	margin-bottom: 5px;
-}
-
-.result-box {
-	background: #f1f5f9;
-	padding: 10px;
-	border-radius: 8px;
-	margin-top: 10px;
-	text-align: center;
-	font-weight: bold;
-}
-
-.nav-btn {
-	background: #48bb78;
-}
-
-.nav-btn:hover {
-	background: #38a169;
-}
-
-.back-btn {
-	background: #718096;
-}
-
-.back-btn:hover {
-	background: #4a5568;
-}
-
-.message {
-	margin-top: 10px;
-	text-align: center;
-	font-size: 14px;
-	color: #2d3748;
-}
-</style>
+<link rel="stylesheet" href="recipepage.css">
 </head>
 
 <body>
+	<div class="page-shell">
+		<div class="app-shell">
+			<header class="top-nav">
+				<div class="brand">
+					<h1 class="brand-title">Pantry &amp; Recipe App</h1>
+					<div class="brand-subtitle">Recipes • Builder • Nutrition</div>
+				</div>
 
-<div class="container">
+				<nav class="nav-links">
+					<button type="button" class="nav-btn" onclick="window.location.href='recipes.html'">Saved Recipes</button>
+					<button type="button" class="nav-btn" onclick="window.location.href='/'">Home</button>
+				</nav>
+			</header>
 
-<h2>🍽 Recipe Builder</h2>
+			<main class="content">
+				<section class="hero">
+					<h1>Recipe Builder</h1>
+					<p>
+						Create recipes, add ingredients, and calculate calories
+					</p>
+				</section>
 
-<input id="recipeName" placeholder="Recipe name">
+				<section class="panel">
+					<h2 class="section-title">Build a Recipe</h2>
+					<p class="section-subtext">
+						Name your recipe, choose a diet tag, add ingredients, and save it
+					</p>
 
-<select id="dietTag">
-<option value="None">No Diet Tag</option>
-<option value="vegetarian">Vegetarian</option>
-<option value="vegan">Vegan</option>
-<option value="halal">Halal</option>
-<option value="gluten-free">Gluten-Free</option>
-</select>
+					<div class="form-grid">
+						<div class="field-group">
+							<label for="recipeName" class="field-label">Recipe Name</label>
+							<input id="recipeName" placeholder="Recipe name">
+						</div>
 
-<select id="ingredient"></select>
+						<div class="field-group">
+							<label for="dietTag" class="field-label">Diet Tag</label>
+							<select id="dietTag">
+								<option value="None">No Diet Tag</option>
+								<option value="vegetarian">Vegetarian</option>
+								<option value="vegan">Vegan</option>
+								<option value="halal">Halal</option>
+								<option value="gluten-free">Gluten-Free</option>
+							</select>
+						</div>
 
-<input id="qty" placeholder="Quantity">
+						<div class="field-group">
+							<label for="ingredient" class="field-label">Ingredient</label>
+							<select id="ingredient"></select>
+						</div>
 
-<button onclick="addIngredient()">Add Ingredient</button>
+						<div class="field-group">
+							<label for="qty" class="field-label">Quantity</label>
+							<input id="qty" placeholder="Quantity">
+						</div>
+					</div>
 
-<ul id="list"></ul>
+					<div class="action-row">
+						<button onclick="addIngredient()">Add Ingredient</button>
+						<button onclick="calcCalories()">Calculate Calories</button>
+						<button onclick="saveRecipe()">Save Recipe</button>
+					</div>
 
-<button onclick="calcCalories()">Calculate Calories</button>
+					<ul id="list"></ul>
 
-<div class="result-box" id="result">
-Total Calories: 0
-</div>
+					<div class="result-box" id="result">
+						Total Calories: 0
+					</div>
 
-<button onclick="saveRecipe()">Save Recipe</button>
+					<p class="message" id="message"></p>
+				</section>
+			</main>
+		</div>
+	</div>
 
-<button class="nav-btn" onclick="window.location.href='recipes.html'">
-View Saved Recipes
-</button>
-
-<button class="back-btn" onclick="window.location.href='/'">
-⬅ Back Home
-</button>
-
-<p class="message" id="message"></p>
-
-</div>
 
 <script>
 let ingredients = [];
@@ -288,6 +231,5 @@ async function initPage() {
 
 initPage();
 </script>
-
 </body>
 </html>

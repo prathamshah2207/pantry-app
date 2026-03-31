@@ -5,51 +5,75 @@
 	<link rel="stylesheet" href="userpage.css">
 </head>
 <body>
-	<div class="container">
-		<p><a href="/">Home</a></p>
-		<h1><center><b>User Profile</b></center></h1>
+	<div class="page-shell">
+		<div class="app-shell">
+			<header class="top-nav">
+				<div class="brand">
+					<h1 class="brand-title">Pantry &amp; Recipe App</h1>
+					<div class="brand-subtitle">Profile • Pantry • Recipes</div>
+				</div>
 
-		<form id="profileForm">
-			<p>
-				<label>Display Name:</label>
-				<span id="displayName"></span>
-				<input type="text" id="editDisplayName" hidden>
-			</p>
+				<nav class="nav-links">
+					<a href="/" class="link-btn">Home</a>
+					<button type="button" id="inventoryButton" class="nav-btn">Inventory</button>
+					<button type="button" id="recipesButton" class="nav-btn">Recipes</button>
+					<button type="button" id="logoutButton" class="nav-btn">Logout</button>
+				</nav>
+			</header>
 
-			<p>
-				<label>Username:</label>
-				<span id="username"></span>
-			</p>
+			<main class="content">
+				<section class="profile-card">
+					<h2 class="section-title">User Profile</h2>
 
-			<p>
-				<label>Email:</label>
-				<span id="email"></span>
-				<input type="email" id="editEmail" hidden>
-			</p>
+					<form id="profileForm">
+						<div class="profile-row">
+							<label class="field-label" for="editDisplayName">Display Name</label>
+							<div>
+								<span id="displayName" class="value-text"></span>
+								<input type="text" id="editDisplayName" hidden>
+							</div>
+						</div>
 
-			<p>
-				<label>Diet Preference:</label>
-				<span id="dietPreference"></span>
-				<select id="editDietPreference" hidden>
-					<option value="">None</option>
-					<option value="vegetarian">Vegetarian</option>
-					<option value="vegan">Vegan</option>
-					<option value="halal">Halal</option>
-					<option value="gluten-free">Gluten-Free</option>
-				</select>
-			</p>
+						<div class="profile-row">
+							<label class="field-label">Username</label>
+							<div>
+								<span id="username" class="value-text"></span>
+							</div>
+						</div>
 
-			<p id="normalButtons">
-				<button type="button" id="editButton">Edit</button>
-				<button type="button" id="inventoryButton">Inventory</button>
-				<button type="button" id="recipesButton">Your recipes</button>
-				<button type="button" id="logoutButton">Logout</button>
-			</p>
+						<div class="profile-row">
+							<label class="field-label" for="editEmail">Email</label>
+							<div>
+								<span id="email" class="value-text"></span>
+								<input type="email" id="editEmail" hidden>
+							</div>
+						</div>
 
-			<p id="editButtons" hidden>
-				<button type="submit">Save</button>
-			</p>
-		</form>
+						<div class="profile-row">
+							<label class="field-label" for="editDietPreference">Diet Preference</label>
+							<div>
+								<span id="dietPreference" class="value-text"></span>
+								<select id="editDietPreference" hidden>
+									<option value="">None</option>
+									<option value="vegetarian">Vegetarian</option>
+									<option value="vegan">Vegan</option>
+									<option value="halal">Halal</option>
+									<option value="gluten-free">Gluten-Free</option>
+								</select>
+							</div>
+						</div>
+
+						<div id="normalButtons" class="action-row">
+							<button type="button" id="editButton">Edit</button>
+						</div>
+
+						<div id="editButtons" class="form-actions" hidden>
+							<button type="submit">Save</button>
+						</div>
+					</form>
+				</section>
+			</main>
+		</div>
 	</div>
 	
 

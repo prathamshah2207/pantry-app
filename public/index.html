@@ -5,15 +5,65 @@
 	<link rel="stylesheet" href="landingpage.css">
 </head>
 <body>
-	<div class="container">
-		<h1><center><b>Pantry & Recipe App</b></center></h1>
-		<p id="welcomeText"></p>
-		<p>
-			<button type="button" id="profileButton">Profile</button>
-			<button type="button" id="inventoryButton">Inventory</button>
-			<button type="button" id="recipesButton">Recipes</button>
-		</p>
+	<div class="page-shell">
+		<div class="app-shell">
+			<header class="top-nav">
+				<div class="brand">
+					<h1 class="brand-title">Pantry &amp; Recipe App</h1>
+					<div class="brand-subtitle">Pantry • Recipes • Nutrition</div>
+				</div>
+
+				<nav class="nav-links">
+					<button type="button" id="profileButton" class="nav-btn">Profile</button>
+					<button type="button" id="inventoryButton" class="nav-btn">Inventory</button>
+					<button type="button" id="recipesButton" class="nav-btn">Recipes</button>
+				</nav>
+			</header>
+
+			<main class="content">
+				<section class="hero">
+					<h1>Your pantry and recipes in one place</h1>
+					<p>
+						A simple pantry app for tracking ingredients, saving recipes,
+						and keeping food planning organized.
+					</p>
+				</section>
+
+				<section class="status-box">
+					<p class="status-label">Current Session</p>
+					<p id="welcomeText"></p>
+				</section>
+
+				<section class="info-grid">
+					<div class="info-block">
+						<h2>Profile</h2>
+						<p>
+							Manage your account details, diet preference, and basic settings for how the app works for you.
+						</p>
+					</div>
+
+					<div class="info-block">
+						<h2>Inventory</h2>
+						<p>
+							Track what ingredients you already have, update quantities, and keep your pantry list current.
+						</p>
+					</div>
+
+					<div class="info-block">
+						<h2>Recipes</h2>
+						<p>
+							Create recipes, save them, and browse them later with support for user preference-based filtering.
+						</p>
+					</div>
+				</section>
+
+				<div class="footer-note">
+					Built as a shared pantry, recipe, and nutrition management app with a single connected flow.
+				</div>
+			</main>
+		</div>
 	</div>
+
 	<script>
 		async function loadPage() {
 			try {

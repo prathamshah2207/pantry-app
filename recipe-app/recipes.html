@@ -2,103 +2,47 @@
 <html>
 <head>
 <title>Saved Recipes</title>
-
-<style>
-body {
-	font-family: 'Segoe UI', sans-serif;
-	background: linear-gradient(to right, #667eea, #764ba2);
-	margin: 0;
-}
-
-.container {
-	width: 500px;
-	margin: 60px auto;
-	background: white;
-	padding: 25px;
-	border-radius: 12px;
-}
-
-.recipe {
-	background: #f8fafc;
-	padding: 15px;
-	border-radius: 8px;
-	margin-bottom: 15px;
-}
-
-h2 {
-	text-align: center;
-}
-
-button {
-	width: 100%;
-	padding: 10px;
-	background: #667eea;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	margin-top: 10px;
-	cursor: pointer;
-}
-
-button:hover {
-	background: #5a67d8;
-}
-
-.delete-btn {
-	background: #e53e3e;
-}
-
-.delete-btn:hover {
-	background: #c53030;
-}
-
-.nav-btn {
-	background: #48bb78;
-}
-
-.nav-btn:hover {
-	background: #38a169;
-}
-
-.note {
-	background: #edf2f7;
-	padding: 10px;
-	border-radius: 8px;
-	margin-bottom: 15px;
-	font-size: 14px;
-	color: #2d3748;
-}
-
-.message {
-	text-align: center;
-	font-size: 14px;
-	color: #2d3748;
-}
-</style>
-
+<link rel="stylesheet" href="recipepage.css">
 </head>
-
 <body>
+	<div class="page-shell">
+		<div class="app-shell">
+			<header class="top-nav">
+				<div class="brand">
+					<h1 class="brand-title">Pantry &amp; Recipe App</h1>
+					<div class="brand-subtitle">Recipes • Saved • Preferences</div>
+				</div>
 
-<div class="container">
+				<nav class="nav-links">
+					<button type="button" class="nav-btn" onclick="window.location.href='recipe_page.html'">Build Recipe</button>
+					<button type="button" class="nav-btn" onclick="window.location.href='/'">Home</button>
+				</nav>
+			</header>
 
-<h2>📋 Saved Recipes</h2>
+			<main class="content">
+				<section class="hero">
+					<h1>Saved Recipes</h1>
+					<p>
+						Browse saved recipes and check calories
+					</p>
+				</section>
 
-<div class="note" id="filterNote" hidden></div>
+				<section class="panel">
+					<h2 class="section-title">Recipe List</h2>
+					<p class="section-subtext">
+						Your saved recipes are shown below and filtered by diet preference when needed
+					</p>
 
-<div id="recipes"></div>
+					<div class="note" id="filterNote" hidden></div>
 
-<button class="nav-btn" onclick="window.location.href='recipe_page.html'">
-➕ Build Another Recipe
-</button>
+					<div id="recipes" class="recipe-list"></div>
 
-<button onclick="window.location.href='/'">
-⬅ Back Home
-</button>
+					<p class="message" id="message"></p>
+				</section>
+			</main>
+		</div>
+	</div>
 
-<p class="message" id="message"></p>
-
-</div>
 
 <script>
 let currentUser = null;
@@ -128,7 +72,7 @@ function renderRecipes(recipes) {
 	container.innerHTML = "";
 
 	if (recipes.length === 0) {
-		container.innerHTML = "<p>No recipes saved yet.</p>";
+		container.innerHTML = '<p class="empty-state">No recipes saved yet.</p>';
 		return;
 	}
 
@@ -222,6 +166,5 @@ async function initPage() {
 
 initPage();
 </script>
-
 </body>
 </html>
