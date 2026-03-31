@@ -5,38 +5,74 @@
 
 <style>
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to right, #667eea, #764ba2);
-    margin: 0;
+	font-family: 'Segoe UI', sans-serif;
+	background: linear-gradient(to right, #667eea, #764ba2);
+	margin: 0;
 }
 
 .container {
-    width: 500px;
-    margin: 60px auto;
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
+	width: 500px;
+	margin: 60px auto;
+	background: white;
+	padding: 25px;
+	border-radius: 12px;
 }
 
 .recipe {
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
+	background: #f8fafc;
+	padding: 15px;
+	border-radius: 8px;
+	margin-bottom: 15px;
 }
 
 h2 {
-    text-align: center;
+	text-align: center;
 }
 
 button {
-    width: 100%;
-    padding: 10px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    margin-top: 10px;
+	width: 100%;
+	padding: 10px;
+	background: #667eea;
+	color: white;
+	border: none;
+	border-radius: 8px;
+	margin-top: 10px;
+	cursor: pointer;
+}
+
+button:hover {
+	background: #5a67d8;
+}
+
+.delete-btn {
+	background: #e53e3e;
+}
+
+.delete-btn:hover {
+	background: #c53030;
+}
+
+.nav-btn {
+	background: #48bb78;
+}
+
+.nav-btn:hover {
+	background: #38a169;
+}
+
+.note {
+	background: #edf2f7;
+	padding: 10px;
+	border-radius: 8px;
+	margin-bottom: 15px;
+	font-size: 14px;
+	color: #2d3748;
+}
+
+.message {
+	text-align: center;
+	font-size: 14px;
+	color: #2d3748;
 }
 </style>
 
@@ -48,15 +84,26 @@ button {
 
 <h2>📋 Saved Recipes</h2>
 
+<div class="note" id="filterNote" hidden></div>
+
 <div id="recipes"></div>
+
+<button class="nav-btn" onclick="window.location.href='recipe_page.html'">
+➕ Build Another Recipe
+</button>
 
 <button onclick="window.location.href='/'">
 ⬅ Back Home
 </button>
 
+<p class="message" id="message"></p>
+
 </div>
 
 <script>
+let currentUser = null;
+let allRecipes = [];
+
 async function checkUser() {
 	try {
 		const resp = await fetch("/user");
@@ -64,40 +111,116 @@ async function checkUser() {
 
 		if (!data.exists) {
 			window.location.replace("/login.html");
-			return;
+			return false;
 		}
+
+		currentUser = data.user;
+		return true;
 	}
 	catch (err) {
 		console.error("Error checking user:", err);
+		return false;
 	}
 }
 
-checkUser();
+function renderRecipes(recipes) {
+	const container = document.getElementById("recipes");
+	container.innerHTML = "";
 
+	if (recipes.length === 0) {
+		container.innerHTML = "<p>No recipes saved yet.</p>";
+		return;
+	}
 
-let data = JSON.parse(localStorage.getItem("recipes")) || [];
-let container = document.getElementById("recipes");
+	recipes.forEach(r => {
+		const div = document.createElement("div");
+		div.className = "recipe";
 
-if (data.length === 0) {
-    container.innerHTML = "<p>No recipes saved yet.</p>";
+		div.innerHTML = `
+			<h3>${r.name}</h3>
+			<p><strong>Total Calories:</strong> ${Number(r.calories).toFixed(2)}</p>
+			<p><strong>Diet Tag:</strong> ${r.dietTag || "None"}</p>
+			<ul>
+				${r.ingredients.map(i => `<li>${i.name} - ${i.quantity}${i.unit || "g"}</li>`).join("")}
+			</ul>
+			<button class="delete-btn" onclick="deleteRecipe(${r.id})">Delete Recipe</button>
+		`;
+
+		container.appendChild(div);
+	});
 }
 
-data.forEach(r => {
+function applyPreferenceFilter(recipes) {
+	const filterNote = document.getElementById("filterNote");
+	filterNote.hidden = true;
+	filterNote.textContent = "";
 
-    let div = document.createElement("div");
-    div.className = "recipe";
+	if (!currentUser || !currentUser.dietPreference || currentUser.dietPreference === "none")
+		return recipes;
 
-    div.innerHTML = `
-        <h3>${r.name}</h3>
-        <p><strong>Total Calories:</strong> ${r.calories}</p>
-        <ul>
-            ${r.ingredients.map(i => `<li>${i.name} - ${i.quantity}g</li>`).join("")}
-        </ul>
-    `;
+	const filtered = recipes.filter(recipe => recipe.dietTag === currentUser.dietPreference);
 
-    container.appendChild(div);
-});
+	filterNote.hidden = false;
+	filterNote.textContent = "Showing recipes matching your diet preference: " + currentUser.dietPreference;
 
+	return filtered;
+}
+
+async function loadRecipes() {
+	try {
+		const response = await fetch("/api/recipes");
+		const data = await response.json();
+
+		if (!response.ok) {
+			document.getElementById("message").textContent = data.message || "Could not load recipes.";
+			return;
+		}
+
+		allRecipes = Array.isArray(data) ? data : [];
+		const filteredRecipes = applyPreferenceFilter(allRecipes);
+		renderRecipes(filteredRecipes);
+	}
+	catch (err) {
+		console.error("Error loading recipes:", err);
+		document.getElementById("message").textContent = "Could not load recipes.";
+	}
+}
+
+async function deleteRecipe(id) {
+	const confirmed = confirm("Delete this recipe?");
+	if (!confirmed)
+		return;
+
+	try {
+		const response = await fetch("/api/recipes/" + id, {
+			method: "DELETE"
+		});
+
+		const data = await response.json();
+
+		if (response.ok) {
+			document.getElementById("message").textContent = data.message;
+			await loadRecipes();
+		}
+		else {
+			document.getElementById("message").textContent = data.message || "Could not delete recipe.";
+		}
+	}
+	catch (err) {
+		console.error("Error deleting recipe:", err);
+		document.getElementById("message").textContent = "Could not delete recipe.";
+	}
+}
+
+async function initPage() {
+	const okay = await checkUser();
+	if (!okay)
+		return;
+
+	await loadRecipes();
+}
+
+initPage();
 </script>
 
 </body>

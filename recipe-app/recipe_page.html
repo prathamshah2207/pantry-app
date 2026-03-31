@@ -5,75 +5,91 @@
 
 <style>
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to right, #667eea, #764ba2);
-    margin: 0;
+	font-family: 'Segoe UI', sans-serif;
+	background: linear-gradient(to right, #667eea, #764ba2);
+	margin: 0;
 }
 
 .container {
-    width: 420px;
-    margin: 60px auto;
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+	width: 420px;
+	margin: 60px auto;
+	background: white;
+	padding: 30px;
+	border-radius: 12px;
+	box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 h2 {
-    text-align: center;
-    margin-bottom: 20px;
+	text-align: center;
+	margin-bottom: 20px;
 }
 
 input, select {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 14px;
+	width: 100%;
+	padding: 12px;
+	margin-top: 10px;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	font-size: 14px;
+	box-sizing: border-box;
 }
 
 button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
+	width: 100%;
+	padding: 12px;
+	margin-top: 12px;
+	background: #667eea;
+	color: white;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	font-weight: bold;
+	transition: 0.2s;
 }
 
 button:hover {
-    background: #5a67d8;
+	background: #5a67d8;
 }
 
 ul {
-    margin-top: 10px;
-    padding-left: 20px;
+	margin-top: 10px;
+	padding-left: 20px;
 }
 
 li {
-    margin-bottom: 5px;
+	margin-bottom: 5px;
 }
 
 .result-box {
-    background: #f1f5f9;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 10px;
-    text-align: center;
-    font-weight: bold;
+	background: #f1f5f9;
+	padding: 10px;
+	border-radius: 8px;
+	margin-top: 10px;
+	text-align: center;
+	font-weight: bold;
 }
 
 .nav-btn {
-    background: #48bb78;
+	background: #48bb78;
 }
 
 .nav-btn:hover {
-    background: #38a169;
+	background: #38a169;
+}
+
+.back-btn {
+	background: #718096;
+}
+
+.back-btn:hover {
+	background: #4a5568;
+}
+
+.message {
+	margin-top: 10px;
+	text-align: center;
+	font-size: 14px;
+	color: #2d3748;
 }
 </style>
 </head>
@@ -86,19 +102,17 @@ li {
 
 <input id="recipeName" placeholder="Recipe name">
 
-<select id="ingredient">
-<option value="1.65">Chicken</option>
-<option value="1.30">Rice</option>
-<option value="8.8">Olive Oil</option>
-<option value="1.55">Egg</option>
-<option value="2.5">Beef</option>
-<option value="0.34">Broccoli</option>
-<option value="0.41">Carrot</option>
-<option value="0.77">Potato</option>
-<option value="4.02">Cheese</option>
+<select id="dietTag">
+<option value="None">No Diet Tag</option>
+<option value="vegetarian">Vegetarian</option>
+<option value="vegan">Vegan</option>
+<option value="halal">Halal</option>
+<option value="gluten-free">Gluten-Free</option>
 </select>
 
-<input id="qty" placeholder="Quantity (g)">
+<select id="ingredient"></select>
+
+<input id="qty" placeholder="Quantity">
 
 <button onclick="addIngredient()">Add Ingredient</button>
 
@@ -116,9 +130,19 @@ Total Calories: 0
 View Saved Recipes
 </button>
 
+<button class="back-btn" onclick="window.location.href='/'">
+⬅ Back Home
+</button>
+
+<p class="message" id="message"></p>
+
 </div>
 
 <script>
+let ingredients = [];
+let totalCalories = 0;
+let availableIngredients = [];
+
 async function checkUser() {
 	try {
 		const resp = await fetch("/user");
@@ -126,71 +150,143 @@ async function checkUser() {
 
 		if (!data.exists) {
 			window.location.replace("/login.html");
-			return;
+			return false;
 		}
+
+		return true;
 	}
 	catch (err) {
 		console.error("Error checking user:", err);
+		return false;
 	}
 }
 
-checkUser();
+async function loadIngredients() {
+	try {
+		const res = await fetch("/api/ingredients");
+		const data = await res.json();
 
-let ingredients = [];
-let totalCalories = 0;
+		if (!Array.isArray(data)) {
+			throw new Error("Ingredients data is invalid");
+		}
+
+		availableIngredients = data;
+
+		const select = document.getElementById("ingredient");
+		select.innerHTML = "";
+
+		availableIngredients.forEach((item) => {
+			const option = document.createElement("option");
+			option.value = item.name;
+			option.textContent = item.name;
+			option.dataset.cals = item.cals;
+			option.dataset.unit = item.unit || "g";
+			select.appendChild(option);
+		});
+	}
+	catch (err) {
+		console.error("Error loading ingredients:", err);
+		document.getElementById("message").textContent = "Could not load ingredients.";
+	}
+}
 
 function addIngredient() {
-    let select = document.getElementById("ingredient");
-    let name = select.options[select.selectedIndex].text;
-    let calories = parseFloat(select.value);
-    let quantity = parseFloat(document.getElementById("qty").value);
+	const select = document.getElementById("ingredient");
+	const selectedOption = select.options[select.selectedIndex];
+	const name = selectedOption.value;
+	const calories = parseFloat(selectedOption.dataset.cals);
+	const unit = selectedOption.dataset.unit || "g";
+	const quantity = parseFloat(document.getElementById("qty").value);
 
-    if (!quantity) {
-        alert("Enter valid quantity");
-        return;
-    }
+	if (!quantity || quantity <= 0) {
+		alert("Enter valid quantity");
+		return;
+	}
 
-    ingredients.push({ name, calories, quantity });
+	ingredients.push({ name, calories, quantity, unit });
 
-    let li = document.createElement("li");
-    li.innerText = name + " - " + quantity + "g";
-    document.getElementById("list").appendChild(li);
+	const li = document.createElement("li");
+	li.innerText = name + " - " + quantity + unit;
+	document.getElementById("list").appendChild(li);
+
+	document.getElementById("qty").value = "";
+	document.getElementById("message").textContent = "";
 }
 
 function calcCalories() {
-    totalCalories = 0;
+	totalCalories = 0;
 
-    ingredients.forEach(i => {
-        totalCalories += i.calories * i.quantity;
-    });
+	ingredients.forEach(i => {
+		totalCalories += i.calories * i.quantity;
+	});
 
-    document.getElementById("result").innerText =
-        "Total Calories: " + totalCalories.toFixed(2);
+	document.getElementById("result").innerText =
+		"Total Calories: " + totalCalories.toFixed(2);
 }
 
-function saveRecipe() {
+async function saveRecipe() {
+	const name = document.getElementById("recipeName").value.trim();
+	const dietTag = document.getElementById("dietTag").value;
 
-    let name = document.getElementById("recipeName").value;
+	if (!name) {
+		alert("Enter recipe name");
+		return;
+	}
 
-    if (!name) {
-        alert("Enter recipe name");
-        return;
-    }
+	if (ingredients.length === 0) {
+		alert("Add at least one ingredient");
+		return;
+	}
 
-    let recipe = {
-        name: name,
-        ingredients: ingredients,
-        calories: totalCalories
-    };
+	calcCalories();
 
-    let stored = JSON.parse(localStorage.getItem("recipes")) || [];
-    stored.push(recipe);
+	try {
+		const response = await fetch("/api/recipes", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				name: name,
+				ingredients: ingredients,
+				calories: totalCalories,
+				dietTag: dietTag
+			})
+		});
 
-    localStorage.setItem("recipes", JSON.stringify(stored));
+		const data = await response.json();
 
-    alert("Recipe saved!");
+		if (response.ok) {
+			document.getElementById("message").textContent = data.message;
+
+			document.getElementById("recipeName").value = "";
+			document.getElementById("dietTag").value = "";
+			document.getElementById("qty").value = "";
+			document.getElementById("list").innerHTML = "";
+			document.getElementById("result").innerText = "Total Calories: 0";
+
+			ingredients = [];
+			totalCalories = 0;
+		}
+		else {
+			document.getElementById("message").textContent = data.message || "Error saving recipe";
+		}
+	}
+	catch (err) {
+		console.error("Error saving recipe:", err);
+		document.getElementById("message").textContent = "Error saving recipe";
+	}
 }
 
+async function initPage() {
+	const okay = await checkUser();
+	if (!okay)
+		return;
+
+	await loadIngredients();
+}
+
+initPage();
 </script>
 
 </body>
