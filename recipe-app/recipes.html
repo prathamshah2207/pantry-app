@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Saved Recipes</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    margin: 0;
+}
+
+.container {
+    width: 500px;
+    margin: 60px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+.recipe {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+h2 {
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📋 Saved Recipes</h2>
+
+<div id="recipes"></div>
+
+<button onclick="window.location.href='index.html'">
+⬅ Back
+</button>
+
+</div>
+
+<script>
+async function checkUser() {
+	try {
+		const resp = await fetch("/user");
+		const data = await resp.json();
+
+		if (!data.exists) {
+			window.location.replace("/login.html");
+			return;
+		}
+	}
+	catch (err) {
+		console.error("Error checking user:", err);
+	}
+}
+
+checkUser();
+
+
+let data = JSON.parse(localStorage.getItem("recipes")) || [];
+let container = document.getElementById("recipes");
+
+if (data.length === 0) {
+    container.innerHTML = "<p>No recipes saved yet.</p>";
+}
+
+data.forEach(r => {
+
+    let div = document.createElement("div");
+    div.className = "recipe";
+
+    div.innerHTML = `
+        <h3>${r.name}</h3>
+        <p><strong>Total Calories:</strong> ${r.calories}</p>
+        <ul>
+            ${r.ingredients.map(i => `<li>${i.name} - ${i.quantity}g</li>`).join("")}
+        </ul>
+    `;
+
+    container.appendChild(div);
+});
+
+</script>
+
+</body>
+</html>

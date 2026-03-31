@@ -5,79 +5,86 @@
 
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #667eea, #764ba2);
     margin: 0;
-    padding: 0;
 }
 
 .container {
-    width: 400px;
-    margin: 50px auto;
+    width: 420px;
+    margin: 60px auto;
     background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
-h1 {
+h2 {
     text-align: center;
     margin-bottom: 20px;
 }
 
-h3 {
-    margin-top: 20px;
-}
-
 input, select {
     width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    background: #4CAF50;
+    padding: 12px;
+    margin-top: 12px;
+    background: #667eea;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
+    transition: 0.2s;
 }
 
 button:hover {
-    background: #45a049;
+    background: #5a67d8;
 }
 
 ul {
+    margin-top: 10px;
     padding-left: 20px;
 }
 
-#result {
-    font-size: 18px;
-    font-weight: bold;
+li {
+    margin-bottom: 5px;
+}
+
+.result-box {
+    background: #f1f5f9;
+    padding: 10px;
+    border-radius: 8px;
     margin-top: 10px;
-    color: #333;
+    text-align: center;
+    font-weight: bold;
+}
+
+.nav-btn {
+    background: #48bb78;
+}
+
+.nav-btn:hover {
+    background: #38a169;
 }
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>🍽 Recipe Tracker</h1>
+<h2>🍽 Recipe Builder</h2>
 
-<h3>Create Recipe</h3>
-<input id="recipeName" placeholder="Enter recipe name">
-<button onclick="createRecipe()">Create Recipe</button>
-
-<h3>Add Ingredient</h3>
+<input id="recipeName" placeholder="Recipe name">
 
 <select id="ingredient">
 <option value="1.65">Chicken</option>
@@ -91,31 +98,48 @@ ul {
 <option value="4.02">Cheese</option>
 </select>
 
-<input id="qty" placeholder="Quantity">
+<input id="qty" placeholder="Quantity (g)">
 
 <button onclick="addIngredient()">Add Ingredient</button>
 
-<h3>Ingredients Added</h3>
 <ul id="list"></ul>
 
-<h3>Calories</h3>
 <button onclick="calcCalories()">Calculate Calories</button>
 
-<p id="result">Total Calories: 0</p>
+<div class="result-box" id="result">
+Total Calories: 0
+</div>
+
+<button onclick="saveRecipe()">Save Recipe</button>
+
+<button class="nav-btn" onclick="window.location.href='recipes.html'">
+View Saved Recipes
+</button>
 
 </div>
 
 <script>
+async function checkUser() {
+	try {
+		const resp = await fetch("/user");
+		const data = await resp.json();
 
-let ingredients = [];
-
-function createRecipe() {
-    let name = document.getElementById("recipeName").value;
-    alert("Recipe Created: " + name);
+		if (!data.exists) {
+			window.location.replace("/login.html");
+			return;
+		}
+	}
+	catch (err) {
+		console.error("Error checking user:", err);
+	}
 }
 
-function addIngredient() {
+checkUser();
 
+let ingredients = [];
+let totalCalories = 0;
+
+function addIngredient() {
     let select = document.getElementById("ingredient");
     let name = select.options[select.selectedIndex].text;
     let calories = parseFloat(select.value);
@@ -129,20 +153,42 @@ function addIngredient() {
     ingredients.push({ name, calories, quantity });
 
     let li = document.createElement("li");
-    li.innerText = name + " - " + quantity;
+    li.innerText = name + " - " + quantity + "g";
     document.getElementById("list").appendChild(li);
 }
 
 function calcCalories() {
-
-    let total = 0;
+    totalCalories = 0;
 
     ingredients.forEach(i => {
-        total += i.calories * i.quantity;
+        totalCalories += i.calories * i.quantity;
     });
 
     document.getElementById("result").innerText =
-        "Total Calories: " + total;
+        "Total Calories: " + totalCalories.toFixed(2);
+}
+
+function saveRecipe() {
+
+    let name = document.getElementById("recipeName").value;
+
+    if (!name) {
+        alert("Enter recipe name");
+        return;
+    }
+
+    let recipe = {
+        name: name,
+        ingredients: ingredients,
+        calories: totalCalories
+    };
+
+    let stored = JSON.parse(localStorage.getItem("recipes")) || [];
+    stored.push(recipe);
+
+    localStorage.setItem("recipes", JSON.stringify(stored));
+
+    alert("Recipe saved!");
 }
 
 </script>
