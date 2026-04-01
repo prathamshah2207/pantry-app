@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-// const cors = require("cors");
 const mysql = require("mysql2/promise");
 const session = require("express-session");
 
@@ -40,7 +39,6 @@ app.use(express.static('public'));
 app.use(express.static('recipe-app'));
 app.use(express.json());
 app.use(bodyParser.json());
-//app.use(cors());
 app.set('trust proxy', 1);
 
 app.use(session({
@@ -56,61 +54,47 @@ app.use(session({
 
 /* recipe related functions */
 
-// get current logged in user for recipe filtering
+// gives current logged in user for recipe filtering
 async function getCurrentUser(req) {
 	if (!req.session.userId)
 		return null;
 
 	const [rows] = await db.query(
-		`SELECT id, name, username, email, diet_preference, allow_substitutions
-		FROM users
-		WHERE id = ?`,
+		`SELECT id, name, username, email, diet_preference, allow_substitutions FROM users WHERE id = ?`,
 		[req.session.userId]
 	);
-
 	return rows[0] || null;
 }
 
-// load only this user's saved recipes
+// this gives only this user's saved recipes and all the global recipes
 async function getAllRecipes(userId) {
 	const [rows] = await db.query(
 		`SELECT id, user_id, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients
-		FROM recipes
-		WHERE user_id = ?
-		ORDER BY id DESC`,
-		[userId]
+		FROM recipes WHERE user_id = ? OR is_global = 1 ORDER BY id DESC`, [userId]
 	);
-
 	return rows;
 }
 
-// load pantry items so recipe availability can be checked
+// loads pantry items so recipe availability can be checked
 async function getInventoryForUser(userId) {
-	const [rows] = await db.query(
-		`SELECT name, quant
-		FROM inventory
-		WHERE user_id = ?`,
-		[userId]
-	);
-
+	const [rows] = await db.query(`SELECT name, quant FROM inventory WHERE user_id = ?`, [userId]);
 	return rows;
 }
 
+// returns a normalized recipe fro a given recipe in form of array with the recipe, its calories, dietary tag and ingredients to make it
 function normalizeRecipe(recipe) {
 	let parsedIngredients = recipe.ingredients;
 
 	if (typeof parsedIngredients === "string") {
 		try {
 			parsedIngredients = JSON.parse(parsedIngredients);
-		}
-		catch {
+		} catch {
 			parsedIngredients = [];
 		}
 	}
 
 	if (!Array.isArray(parsedIngredients))
 		parsedIngredients = [];
-
 	return {
 		...recipe,
 		calories: Number(recipe.calories) || 0,
@@ -119,6 +103,7 @@ function normalizeRecipe(recipe) {
 	};
 }
 
+// returns a map of each inventory items with their quantities
 function buildInventoryMap(items) {
 	const inventoryMap = new Map();
 
@@ -134,25 +119,24 @@ function buildInventoryMap(items) {
 	return inventoryMap;
 }
 
+// THis is for matching if any ingredients for a recipe are missing from the pantry inventory and if so then returns them
 function attachPantryMatch(recipe, inventoryMap) {
-	const missingIngredients = recipe.ingredients
-		.map(ingredient => {
-			const key = String(ingredient.name || "").trim().toLowerCase();
-			const need = Number(ingredient.quantity) || 0;
-			const have = inventoryMap.get(key) || 0;
+	const missingIngredients = recipe.ingredients.map(ingredient => {
+		const key = String(ingredient.name || "").trim().toLowerCase();
+		const need = Number(ingredient.quantity) || 0;
+		const have = inventoryMap.get(key) || 0;
 
-			if (have >= need) {
-				return null;
-			}
+		if (have >= need) {
+			return null;
+		}
 
-			return {
-				name: ingredient.name,
-				need,
-				have,
-				unit: ingredient.unit || ""
-			};
-		})
-		.filter(Boolean);
+		return {
+			name: ingredient.name,
+			need,
+			have,
+			unit: ingredient.unit || ""
+		};
+	}).filter(Boolean);
 
 	return {
 		...recipe,
@@ -489,13 +473,7 @@ app.put("/user", async (req, res) => {
 
 app.get("/api/recipes", async (req, res) => {
 	try {
-		const {
-			search = "",
-			dietTag = "",
-			ingredient = "",
-			maxCalories = "",
-			availableOnly = "false"
-		} = req.query;
+		const { search = "", dietTag = "", ingredient = "", maxCalories = "", availableOnly = "false"} = req.query;
 
 		const user = await getCurrentUser(req);
 		if (!user)
@@ -514,22 +492,16 @@ app.get("/api/recipes", async (req, res) => {
 
 		// filter by recipe name
 		if (cleanSearch)
-			recipes = recipes.filter(recipe =>
-				String(recipe.name || "").toLowerCase().includes(cleanSearch)
-			);
+			recipes = recipes.filter(recipe => String(recipe.name || "").toLowerCase().includes(cleanSearch));
 
 		// filter by diet tag
 		if (cleanDietTag && cleanDietTag !== "none")
-			recipes = recipes.filter(recipe =>
-				String(recipe.dietTag || "").toLowerCase() === cleanDietTag
-			);
+			recipes = recipes.filter(recipe => String(recipe.dietTag || "").toLowerCase() === cleanDietTag);
 
 		// filter by ingredient name
 		if (cleanIngredient)
 			recipes = recipes.filter(recipe =>
-				recipe.ingredients.some(item =>
-					String(item.name || "").toLowerCase().includes(cleanIngredient)
-				)
+				recipe.ingredients.some(item => String(item.name || "").toLowerCase().includes(cleanIngredient))
 			);
 
 		// filter by max calories
@@ -582,7 +554,7 @@ app.post("/api/recipes", async (req, res) => {
 	}
 	catch (error) {
 		console.error(error);
-		res.status(500).json({ message: "Error saving recipe" });
+		res.status(500).json({message: "Error saving recipe" });
 	}
 });
 
@@ -590,14 +562,12 @@ app.delete("/api/recipes/:id", async (req, res) => {
 	try {
 		if (!req.session.userId)
 			return res.status(401).json({ message: "No active user session found" });
-
 		const recipeId = req.params.id;
 
 		await db.query(
 			"DELETE FROM recipes WHERE id = ? AND user_id = ?",
 			[recipeId, req.session.userId]
 		);
-
 		res.json({ message: "Recipe deleted successfully" });
 	}
 	catch (error) {
