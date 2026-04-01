@@ -1,0 +1,52 @@
+[
+	{
+		"name": "Apple",
+		"cals": 52,
+		"unit": "g"
+	},
+	{
+		"name": "Banana",
+		"cals": 89,
+		"unit": "g"
+	},
+	{
+		"name": "Rice",
+		"cals": 130,
+		"unit": "g"
+	},
+	{
+		"name": "Milk",
+		"cals": 42,
+		"unit": "ml"
+	},
+	{
+		"name": "Bread",
+		"cals": 265,
+		"unit": "g"
+	},
+	{
+		"name": "Egg",
+		"cals": 155,
+		"unit": "g"
+	},
+	{
+		"name": "Chicken",
+		"cals": 165,
+		"unit": "g"
+	},
+	{
+		"name": "Potato",
+		"cals": 77,
+		"unit": "g"
+	},
+	{
+		"name": "Tomato",
+		"cals": 18,
+		"unit": "g"
+	},
+	{
+		"name": "Onion",
+		"cals": 40,
+		"unit": "g"
+	}
+]
