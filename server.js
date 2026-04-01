@@ -63,12 +63,9 @@ async function getCurrentUser(req) {
 async function getAllRecipes(userId) {
 	const [rows] = await db.query(
 		`SELECT id, user_id, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients
-		FROM recipes
-		WHERE user_id = ?
-		ORDER BY id DESC`,
+		FROM recipes WHERE user_id = ? OR is_global = 1 ORDER BY id DESC`,
 		[userId]
 	);
-
 	return rows;
 }
 
