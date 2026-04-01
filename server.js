@@ -15,18 +15,16 @@ const fsPromises = fs.promises;
 
 const dbConfig = {
 	host: process.env.DB_HOST || 'db',
+	port: Number(process.env.DB_PORT || 3306),
 	user: process.env.DB_USER || 'root',
 	password: process.env.DB_PASSWORD || 'root',
 	database: process.env.DB_NAME || 'pantry_app',
-	port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-	waitForConnections: true
+	waitForConnections: true,
+	connectionLimit: 10
 };
 
-if (process.env.DB_SSL === 'true') {
-	dbConfig.ssl = process.env.DB_CA
-		? { ca: process.env.DB_CA }
-		: { rejectUnauthorized: false };
-}
+if (process.env.DB_SSL === 'true')
+	dbConfig.ssl = process.env.DB_CA ? { ca: process.env.DB_CA } : { rejectUnauthorized: false };
 
 const db = mysql.createPool(dbConfig);
 
