@@ -1,28 +1,45 @@
 # CMPT 370 Project
 
-The app is basically a pantry / recipe / nutrition manager type thing where users can keep track of what food items they have, manage their profile and diet preferences, and work with recipe and inventory features in one place. The whole point was to build a simple working prototype so we kept things pretty straightforward and focused on getting the core stuff working.
+The app is basically a pantry / recipe manager app. The idea is to keep everything in one place so a user can manage their profile, track pantry inventory, build and save recipes, and use filtering features based on things like diet preference, ingredients, calories, and pantry availability.
 
-Right now the project has a basic user profile system and inventory functionality working. A user can create a profile, view it, and edit parts of it like display name, email, and diet preference. The app also has the inventory page and backend routes connected through the shared server setup. We also set the project up with Docker so it’s easier to run without everyone’s laptop doing some weird dependency drama.
+## What is implemented right now
 
-## THis si what’s implemented right now
+- landing page with navigation to the main app sections
+- user signup, login, logout, and session handling
+- user profile display and editing
+- diet preference saved with user profile
+- inventory page with add, edit, reset, and delete item features
+- inventory stored in MySQL and tied to the correct logged in user
+- recipe builder page
+- recipe saving and loading through backend APIs
+- saved recipes page
+- recipe filtering by:
+	- recipe name
+	- ingredient
+	- diet tag
+	- max calories
+	- pantry availability
+- pantry matching for recipes so users can see which recipes they can fully make from their current inventory
+- global recipe support along with user-created recipes
+- Docker setup for local development
+- deployed live version on Render
 
-- basic landing page
-- user profile creation and editing
-- user profile display
-- diet preference and inventory saved with user profile
-- inventory page and inventory backend routes
-- docker setup for running the app
+## Live deployed version
 
-## this is how to run it
+The deployed version is available here:
 
-make sure Docker Desktop is running first, otherwise this whole thing is gonna act dead
+`https://pantry.somehowimanaged.website`
 
-from the project folder, run this command in cmd or powershell or bash or in any terminal:
+The database is setup on railway services for MySQL
 
+### Important note about the deployed version
+
+Since the deployed app is running on Render free tier, it may take a little time to load the first time if it has gone to sleep. If nobody has used it for a bit, Render may need to wake the service back up, so the first load can take around 3 to 5 minutes sometimes. After that, it should work normally.
+
+## Local run instructions
+
+Make sure Docker Desktop is running first, otherwise the app will just not work
+From the project folder, run this command in cmd, powershell, bash, or whatever terminal you use:
+
+```bash
 docker compose up --build -d
-
-and then after the whole process is up and running, goto localhost:80
-
-and when you want to shut things down, just run this command in the same terminal:
-
-docker compose down
