@@ -43,3 +43,27 @@ From the project folder, run this command in cmd, powershell, bash, or whatever 
 
 ```bash
 docker compose up --build -d
+```
+After everything is up and running, go to:
+
+```http://localhost:80```
+
+To stop it later, run:
+
+```bash
+docker compose down
+```
+
+## Main tech used
+- Node.js
+- Express
+- MySQL
+- HTML / CSS / JavaScript
+- Docker / Docker Compose
+- Render for deployment
+- Railway for hosted MySQL
+
+## Notes
+- The app uses browser sessions for login state
+- Inventory and recipes are linked to the logged in user
+- Some recipe data is shared through global recipes, while users can also create their own
