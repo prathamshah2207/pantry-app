@@ -67,7 +67,7 @@ async function getCurrentUser(req) {
 // this gives only this user's saved recipes and all the global recipes
 async function getAllRecipes(userId) {
 	const [rows] = await db.query(
-		`SELECT id, user_id, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients, is_global
+		`SELECT id, user_id AS userId, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients, is_global
 		FROM recipes WHERE user_id = ? OR is_global = 1 ORDER BY id DESC`, [userId]
 	);
 	return rows;
