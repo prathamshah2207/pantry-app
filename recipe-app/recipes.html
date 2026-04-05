@@ -185,6 +185,19 @@
 				const div = document.createElement("div");
 				div.className = "recipe";
 
+				const isOwner = r.userId === currentUser.id;
+				const globalButton = (isOwner && !r.isGlobal)
+					? `<button class="global-btn" onclick="makeRecipeGlobal(${r.id})">Make Global</button>`
+					: "";
+
+				const deleteButton = isOwner
+					? `<button class="delete-btn" onclick="deleteRecipe(${r.id})">Delete Recipe</button>`
+					: "";
+
+				const globalBadge = r.isGlobal
+					? `<p class="recipe-status recipe-status-ok">Global Recipe</p>`
+					: "";
+
 				const missingHtml = r.canMake
 					? `<p class="recipe-status recipe-status-ok">Can make from pantry</p>`
 					: `
@@ -196,19 +209,44 @@
 						</ul>
 					`;
 
+				
 				div.innerHTML = `
 					<h3>${r.name}</h3>
 					<p><strong>Total Calories:</strong> ${Number(r.calories).toFixed(2)}</p>
 					<p><strong>Diet Tag:</strong> ${r.dietTag || "None"}</p>
+					${globalBadge}
 					${missingHtml}
 					<ul>
 						${r.ingredients.map(i => `<li>${i.name} - ${i.quantity}${i.unit || "g"}</li>`).join("")}
 					</ul>
-					<button class="delete-btn" onclick="deleteRecipe(${r.id})">Delete Recipe</button>
+					${globalButton}
+					${deleteButton}
 				`;
 
 				container.appendChild(div);
 			});
+		}
+
+		async function makeRecipeGlobal(id) {
+			try {
+				const response = await fetch("/api/recipes/" + id + "/global", {
+					method: "POST"
+				});
+
+				const data = await response.json();
+
+				if (response.ok) {
+					document.getElementById("message").textContent = data.message;
+					await loadRecipes();
+				}
+				else {
+					document.getElementById("message").textContent = data.message || "Could not make recipe global.";
+				}
+			}
+			catch (err) {
+				console.error("Error making recipe global:", err);
+				document.getElementById("message").textContent = "Could not make recipe global.";
+			}
 		}
 
 		async function loadRecipes() {

@@ -67,7 +67,7 @@ async function getCurrentUser(req) {
 // this gives only this user's saved recipes and all the global recipes
 async function getAllRecipes(userId) {
 	const [rows] = await db.query(
-		`SELECT id, user_id, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients
+		`SELECT id, user_id, name, calories, diet_tag AS dietTag, ingredients_json AS ingredients, is_global
 		FROM recipes WHERE user_id = ? OR is_global = 1 ORDER BY id DESC`, [userId]
 	);
 	return rows;
@@ -97,6 +97,7 @@ function normalizeRecipe(recipe) {
 		...recipe,
 		calories: Number(recipe.calories) || 0,
 		dietTag: recipe.dietTag || "None",
+		isGlobal: !!recipe.is_global,
 		ingredients: parsedIngredients
 	};
 }
@@ -553,6 +554,42 @@ app.post("/api/recipes", async (req, res) => {
 	catch (error) {
 		console.error(error);
 		res.status(500).json({message: "Error saving recipe" });
+	}
+});
+
+app.post("/api/recipes/:id/global", async (req, res) => {
+	try {
+		if (!req.session.userId)
+			return res.status(401).json({ message: "No active user session found" });
+
+		const recipeId = req.params.id;
+
+		const [rows] = await db.query(
+			"SELECT id, user_id, is_global FROM recipes WHERE id = ?",
+			[recipeId]
+		);
+
+		if (rows.length === 0)
+			return res.status(404).json({ message: "Recipe not found" });
+
+		const recipe = rows[0];
+
+		if (recipe.user_id !== req.session.userId)
+			return res.status(403).json({ message: "You can only global your own recipes" });
+
+		if (recipe.is_global === 1)
+			return res.json({ message: "Recipe is already global" });
+
+		await db.query(
+			"UPDATE recipes SET is_global = 1 WHERE id = ? AND user_id = ?",
+			[recipeId, req.session.userId]
+		);
+
+		res.json({ message: "Recipe made global successfully" });
+	}
+	catch (error) {
+		console.error(error);
+		res.status(500).json({ message: "Error making recipe global" });
 	}
 });
 
